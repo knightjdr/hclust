@@ -5,10 +5,10 @@ import (
 	"math"
 )
 
-// DistFunc returns a function for calculating the distance between two vectors.
+// DistMetric returns a function for calculating the distance between two vectors.
 // Any entries that are zero in both vectors are ignored and vectors must be equal
 // length. Default metrix is euclidean.
-func DistFunc(metric string) func(x []float64, y []float64) (dist float64, err error) {
+func DistMetric(metric string) func(x []float64, y []float64) (dist float64, err error) {
 	if metric == "binary" {
 		// Binary considers two non-zero values to be equivalent.
 		binary := func(x []float64, y []float64) (dist float64, err error) {

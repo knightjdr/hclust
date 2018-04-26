@@ -7,7 +7,7 @@ package hclust
 // Manhattan and maximum.
 func Distance(matrix [][]float64, metric string, transpose bool) (dist [][]float64) {
 	// Get distance function.
-	distFunc := DistFunc(metric)
+	distMetric := DistMetric(metric)
 
 	// Transpose matrix if requested.
 	if transpose {
@@ -25,7 +25,7 @@ func Distance(matrix [][]float64, metric string, transpose bool) (dist [][]float
 	for i := range matrix {
 		dist[i][i] = 0
 		for j := i + 1; j < dim; j++ {
-			elementDist, _ := distFunc(matrix[i], matrix[j])
+			elementDist, _ := distMetric(matrix[i], matrix[j])
 			dist[i][j] = elementDist
 			dist[j][i] = elementDist
 		}
