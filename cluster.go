@@ -4,9 +4,9 @@ import "errors"
 
 // SubCluster stores the distance and names of leafs for a subcluster.
 type SubCluster struct {
-	dist  float64
-	leafl interface{}
-	leafr interface{}
+	Dist  float64
+	Leafa int
+	Leafb int
 }
 
 // Cluster clusters a square symmetric matrix and returns a dendrogram as a
@@ -14,7 +14,7 @@ type SubCluster struct {
 // row/column names is required for the dendrogram and ordered vector. Linkage
 // method options are: average, centroid, complete, McQuitty,
 // median, single and Ward’s.
-func Cluster(matrix [][]float64, names []string, method string) (dendrogram string, ordered []string, err error) {
+func Cluster(matrix [][]float64, names []string, method string) (dendrogram []SubCluster, ordered []string, err error) {
 	// Return if matrix is not symmetric.
 	colDim := len(matrix[0])
 	rowDim := len(matrix)
@@ -30,27 +30,13 @@ func Cluster(matrix [][]float64, names []string, method string) (dendrogram stri
 		return
 	}
 
-	// Linkage functions.
-	linkage := Linkage(method)
-	mergeRows := MergeRows(method)
-
-	// Create cluster list for holding cluster leafs and subcluster names.
-	// Leafs are denoted by strings and subclusters by integers.
-	clusterList := make([]interface{}, len(names))
-	for i := range names {
-		clusterList[i] = names[i]
+	// Linkage.
+	dendrogram = make([]SubCluster, 2*N-1)
+	if method == "single" {
+		dendrogram = Single(matrix)
+	} else {
+		dendrogram, err = NearestNeighbor(matrix, method)
 	}
 
-	// Iterate until cluster number equals N - 1
-	clusteredMatrix := matrix           // Create copy of input matrix.
-	clusters := make([]SubCluster, N-1) // Store each cluster by index.
-	for clusterID := 0; clusterID < N-1; clusterID++ {
-		// Get most similar cluster.
-		dist, subCluster := linkage(clusteredMatrix)
-		// Create new cluster and add to cluster names.
-		clusters[clusterID], clusterList = CreateCluster(clusterList, clusterID, dist, subCluster["a"], subCluster["b"])
-		// Update matrix.
-		clusteredMatrix = mergeRows(clusteredMatrix, subCluster["a"], subCluster["b"])
-	}
 	return
 }
