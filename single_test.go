@@ -15,7 +15,7 @@ func TestSingle(t *testing.T) {
 		{2, 5.8, 14.1, 9, 0},
 	}
 
-	// TEST1: get dendrogram.
+	// TEST1: dendrogram.
 	want := []SubCluster{
 		{2, 0, 4},
 		{5.8, 5, 1},

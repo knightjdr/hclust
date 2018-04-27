@@ -14,14 +14,14 @@ func Single(matrix [][]float64) (dendrogram []SubCluster) {
 	// Leaf labels for loop iterations.
 	iterLabels := make([][]int, N)
 	iterLabels[0] = make([]int, N)
-	for i := range iterLabels[0] {
-		iterLabels[0][i] = i
-	}
 
 	// Distance between leafs.
 	distance := make([]map[string]float64, N)
 	distance[0] = make(map[string]float64, N)
-	for i := range iterLabels[0] {
+
+	// Zero labels and distance.
+	for i := 0; i < N; i++ {
+		iterLabels[0][i] = i
 		strLabel := strconv.Itoa(i)
 		distance[0][strLabel] = math.MaxFloat64
 	}
