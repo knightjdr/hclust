@@ -5,8 +5,8 @@ import (
 	"math"
 )
 
-// UpdateNN calculates a new row/column to add to a distance matrix for a new node.
-// Methods supported: average, complete, ward or weighted.
+// UpdateNN calculates the new row/column to add to a distance matrix for a new node.
+// Methods supported: average, complete, mcquitty or ward.
 func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64), err error) {
 	if method == "average" {
 		average := func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64) {
@@ -38,26 +38,8 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 			return
 		}
 		return complete, nil
-	} else if method == "ward" {
-		ward := func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64) {
-			x := matrix[a]
-			y := matrix[b]
-			dim := len(x)
-			newRow = make([]float64, dim+1)
-			for i := 0; i < dim; i++ {
-				numerator := float64(nodeSize[a]+nodeSize[i]) * x[i]
-				numerator += float64(nodeSize[b]+nodeSize[i]) * y[i]
-				numerator -= float64(nodeSize[i]) * x[b]
-				denominator := float64(nodeSize[a] + nodeSize[b] + nodeSize[i])
-				newRow[i] = math.Sqrt(numerator / denominator)
-			}
-			// Set self distance to zero.
-			newRow[dim] = 0
-			return
-		}
-		return ward, nil
-	} else if method == "weighted" {
-		weighted := func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64) {
+	} else if method == "mcquitty" {
+		mcquitty := func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64) {
 			x := matrix[a]
 			y := matrix[b]
 			dim := len(x)
@@ -69,7 +51,25 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 			newRow[dim] = 0
 			return
 		}
-		return weighted, nil
+		return mcquitty, nil
+	} else if method == "ward" {
+		ward := func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64) {
+			x := matrix[a]
+			y := matrix[b]
+			dim := len(x)
+			newRow = make([]float64, dim+1)
+			for i := 0; i < dim; i++ {
+				numerator := float64(nodeSize[a]+nodeSize[i]) * math.Pow(x[i], 2)
+				numerator += float64(nodeSize[b]+nodeSize[i]) * math.Pow(y[i], 2)
+				numerator -= float64(nodeSize[i]) * math.Pow(x[b], 2)
+				denominator := float64(nodeSize[a] + nodeSize[b] + nodeSize[i])
+				newRow[i] = math.Sqrt(numerator / denominator)
+			}
+			// Set self distance to zero.
+			newRow[dim] = 0
+			return
+		}
+		return ward, nil
 	}
 	err = errors.New("Unknown linkage method")
 	return

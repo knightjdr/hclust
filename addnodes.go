@@ -1,12 +1,13 @@
 package hclust
 
 type Union struct {
+	Length    []float64
 	NextLabel int
 	Parent    []int
 }
 
 // Find highest incorporated parent node for a subnode n.
-func (u *Union) Find(n int) int {
+func (u *Union) Find(n int, length float64) (int, float64) {
 	p := n
 
 	// Find existing highest parent in dendrogram.
@@ -21,35 +22,45 @@ func (u *Union) Find(n int) int {
 		p = u.Parent[currP]
 		u.Parent[currP] = n
 	}
-	return n
+
+	// Get length of parent or set length to half input value if not defined.
+	nodeLength := length / float64(2)
+	if u.Length[n] > -1 {
+		nodeLength = nodeLength - u.Length[n]
+	}
+	return n, nodeLength
 }
 
-// Set parent of most recently added node.
-func (u *Union) AddParent(a, b int) {
+// Set parent of most recently added node. Also set it's length.
+func (u *Union) AddParent(a, b int, length float64) {
+	u.Length[u.NextLabel] = length
 	u.Parent[a] = u.NextLabel
 	u.Parent[b] = u.NextLabel
 	u.NextLabel++
 }
 
-// AddNodes adds numbered nodes to a dendrogram. The first new node will be
-// equal to the length of the dendrogram.
+// AddNodes adds numbered nodes to a dendrogram and converts distances between
+// leafs to branch lengths. The first new node will be equal to the length of
+// the dendrogram.
 func AddNodes(dendrogram []SubCluster) (newDendrogram []SubCluster) {
 	// First parent node number.
 	N := len(dendrogram) + 1
 
-	// Create union. Unknown parent nodes are -1.
+	// Create union. Unknown parent nodes and node lengths are -1.
+	length := make([]float64, 2*len(dendrogram)+1)
 	parent := make([]int, 2*len(dendrogram))
 	for i := range parent {
+		length[i] = -1
 		parent[i] = -1
 	}
-	union := Union{NextLabel: N, Parent: parent}
+	union := Union{Length: length, NextLabel: N, Parent: parent}
 
 	// First node to add.
 	for _, subcluster := range dendrogram {
-		subnodeA := union.Find(subcluster.Leafa)
-		subnodeB := union.Find(subcluster.Leafb)
-		newDendrogram = append(newDendrogram, SubCluster{subcluster.Dist, subnodeA, subnodeB})
-		union.AddParent(subnodeA, subnodeB)
+		subnodeA, lengthA := union.Find(subcluster.Leafa, subcluster.Lengtha)
+		subnodeB, lengthB := union.Find(subcluster.Leafb, subcluster.Lengthb)
+		newDendrogram = append(newDendrogram, SubCluster{subnodeA, subnodeB, lengthA, lengthB})
+		union.AddParent(subnodeA, subnodeB, subcluster.Lengtha/float64(2))
 	}
 	return
 }

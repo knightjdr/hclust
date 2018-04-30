@@ -17,10 +17,38 @@ func TestSingle(t *testing.T) {
 
 	// TEST1: dendrogram.
 	want := []SubCluster{
-		{2, 0, 4},
-		{5.8, 5, 1},
-		{9, 6, 3},
-		{12.2, 7, 2},
+		{0, 4, 1, 1},
+		{5, 1, 1.9, 2.9},
+		{6, 3, 1.6, 4.5},
+		{7, 2, 1.6, 6.1},
 	}
-	assert.Equal(t, want, Single(dist), "Dendrogram not correct for single linkage")
+	dendrogram := Single(dist)
+	for i, cluster := range dendrogram {
+		assert.Equal(
+			t,
+			want[i].Leafa,
+			cluster.Leafa,
+			"Parent nodes not added to dendrogram correctly for single linkage",
+		)
+		assert.Equal(
+			t,
+			want[i].Leafb,
+			cluster.Leafb,
+			"Parent nodes not added to dendrogram correctly for single linkage",
+		)
+		assert.InDeltaf(
+			t,
+			want[i].Lengtha,
+			cluster.Lengtha,
+			0.01,
+			"Dendrogram branch lengths not correct for single linkage",
+		)
+		assert.InDeltaf(
+			t,
+			want[i].Lengthb,
+			cluster.Lengthb,
+			0.01,
+			"Dendrogram branch lengths not correct for single linkage",
+		)
+	}
 }

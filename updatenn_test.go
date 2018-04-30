@@ -40,8 +40,18 @@ func TestUpdateNN(t *testing.T) {
 		"Dendrogram not correct for complete linkage",
 	)
 
-	// TEST3: ward.
-	want = []float64{1.83, 1.83, 4.74, 5, 1.64, 0}
+	// TEST4: mcquitty.
+	want = []float64{5, 5, 20.4, 20, 3.9, 0}
+	updateFunc, _ = UpdateNN("mcquitty")
+	assert.Equal(
+		t,
+		want,
+		updateFunc(dist, 0, 1, nodeSize),
+		"Dendrogram not correct for mcquitty linkage",
+	)
+
+	// TEST5: ward.
+	want = []float64{5.78, 5.78, 22.08, 23.67, 1.61, 0}
 	updateFunc, _ = UpdateNN("ward")
 	assert.InDeltaSlice(
 		t,
@@ -49,15 +59,5 @@ func TestUpdateNN(t *testing.T) {
 		updateFunc(dist, 0, 1, nodeSize),
 		0.01,
 		"Dendrogram not correct for ward linkage",
-	)
-
-	// TEST5: weighted.
-	want = []float64{5, 5, 20.4, 20, 3.9, 0}
-	updateFunc, _ = UpdateNN("weighted")
-	assert.Equal(
-		t,
-		want,
-		updateFunc(dist, 0, 1, nodeSize),
-		"Dendrogram not correct for weighted linkage",
 	)
 }

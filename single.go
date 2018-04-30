@@ -11,55 +11,57 @@ func Single(matrix [][]float64) (dendrogram []SubCluster) {
 	// Number of leafs.
 	N := len(matrix)
 
-	// Leaf labels for loop iterations.
-	iterLabels := make([][]int, N)
-	iterLabels[0] = make([]int, N)
+	// Leaf labels.
+	iterLabel := make([]int, N)
 
 	// Distance between leafs.
-	distance := make([]map[string]float64, N)
-	distance[0] = make(map[string]float64, N)
+	distance := make(map[string]float64, N)
 
 	// Zero labels and distance.
 	for i := 0; i < N; i++ {
-		iterLabels[0][i] = i
+		iterLabel[i] = i
 		strLabel := strconv.Itoa(i)
-		distance[0][strLabel] = math.MaxFloat64
+		distance[strLabel] = math.MaxFloat64
 	}
 
 	// Current node.
-	c := iterLabels[0][0]
+	c := iterLabel[0]
 
 	// Iterate until there is a single cluster remaining.
 	for i := 1; i < N; i++ {
 		// Remove current node from iterLabels.
-		cIndex := SliceIndex(len(iterLabels[i-1]), func(j int) bool { return iterLabels[i-1][j] == c })
-		iterLabels[i] = make([]int, len(iterLabels[i-1])-1)
+		cIndex := SliceIndex(len(iterLabel), func(j int) bool { return iterLabel[j] == c })
+		iterLabelNext := make([]int, len(iterLabel)-1)
 		if cIndex >= 0 {
-			iterLabels[i] = append(iterLabels[i-1][:cIndex], iterLabels[i-1][cIndex+1:]...)
+			iterLabelNext = append(iterLabel[:cIndex], iterLabel[cIndex+1:]...)
 		}
 
 		// Find leaf nearest to current node.
-		distance[i] = make(map[string]float64, len(iterLabels[i]))
-		for _, label := range iterLabels[i] {
+		distanceNext := make(map[string]float64, len(iterLabelNext))
+		for _, label := range iterLabelNext {
 			strLabel := strconv.Itoa(label)
-			distance[i][strLabel] = math.Min(distance[i-1][strLabel], matrix[label][c])
+			distanceNext[strLabel] = math.Min(distance[strLabel], matrix[label][c])
 		}
 
 		// Nearest node.
-		nodeIndex := ArgMinSingle(distance[i])
+		nodeIndex := ArgMinSingle(distanceNext)
 		numIndex, _ := strconv.Atoi(nodeIndex)
 		dendrogram = append(
 			dendrogram,
-			SubCluster{distance[i][nodeIndex], c, numIndex},
+			SubCluster{c, numIndex, distanceNext[nodeIndex], distanceNext[nodeIndex]},
 		)
 
 		// Change current node.
 		c = numIndex
+
+		// Update previous distance and labels.
+		distance = distanceNext
+		iterLabel = iterLabelNext
 	}
 
 	// Sort dendrogram.
 	sort.SliceStable(dendrogram, func(i, j int) bool {
-		return dendrogram[i].Dist < dendrogram[j].Dist
+		return dendrogram[i].Lengtha < dendrogram[j].Lengtha
 	})
 
 	// Label dendrogram.

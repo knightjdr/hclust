@@ -4,9 +4,10 @@ import "errors"
 
 // SubCluster stores the distance and names of leafs for a subcluster.
 type SubCluster struct {
-	Dist  float64
-	Leafa int
-	Leafb int
+	Leafa   int
+	Leafb   int
+	Lengtha float64
+	Lengthb float64
 }
 
 // Cluster clusters a square symmetric matrix and returns a dendrogram as a
@@ -14,7 +15,7 @@ type SubCluster struct {
 // row/column names is required for the dendrogram and ordered vector. Linkage
 // method options are: average, centroid, complete, McQuitty,
 // median, single and Ward’s.
-func Cluster(matrix [][]float64, names []string, method string) (dendrogram []SubCluster, ordered []string, err error) {
+func Cluster(matrix [][]float64, names []string, method string) (dendrogram []SubCluster, order []string, err error) {
 	// Return if matrix is not symmetric.
 	colDim := len(matrix[0])
 	rowDim := len(matrix)
@@ -34,7 +35,13 @@ func Cluster(matrix [][]float64, names []string, method string) (dendrogram []Su
 	dendrogram = make([]SubCluster, 2*N-1)
 	if method == "single" {
 		dendrogram = Single(matrix)
-	} else {
+	} else if method == "average" {
+		dendrogram, err = NearestNeighbor(matrix, method)
+	} else if method == "complete" {
+		dendrogram, err = NearestNeighbor(matrix, method)
+	} else if method == "mcquitty" {
+		dendrogram, err = NearestNeighbor(matrix, method)
+	} else if method == "ward" {
 		dendrogram, err = NearestNeighbor(matrix, method)
 	}
 
