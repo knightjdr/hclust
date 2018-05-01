@@ -12,6 +12,38 @@ the single method was implemented using MST, the average, complete, McQuitty and
 Ward methods are implemented using the nearest-neighbor chain algorithm and the
 centroid and median methods were implemented using the generic algorithm.
 
+## Installation
+
+`go get github.com/knightjdr/hclust`
+
+## Usage
+
+`import "github.com/knightjdr/hclust"`
+
+### Distance
+
+Setting the transpose argument to true will calculate distances between columns
+as apposed to rows.
+
+`Distance(matrix [][]float64, metric string, transpose bool) [][]float64`
+
+### Cluster
+
+Cluster requires a symmetric distance matrix and a vector of names for the
+rows/columns. It will return a dendrogram with each row corresponding to a node,
+a newick tree and the names vector sorted based on the clustering order.
+
+```
+type SubCluster struct {
+	Leafa   int
+	Leafb   int
+	Lengtha float64
+	Lengthb float64
+}
+
+Cluster(matrix [][]float64, names []string, method string) (dendrogram []SubCluster, newick string, order []string, err error)
+```
+
 ## Benchmarks
 
 Specs for benchmark: single core on a 3.7 GHz Quad-Core Intel Xeon E5 processor

@@ -15,7 +15,11 @@ type SubCluster struct {
 // row/column names is required for the dendrogram and ordered vector. Linkage
 // method options are: average, centroid, complete, McQuitty,
 // median, single and Ward’s.
-func Cluster(matrix [][]float64, names []string, method string) (dendrogram []SubCluster, order []string, err error) {
+func Cluster(
+	matrix [][]float64,
+	names []string,
+	method string,
+) (dendrogram []SubCluster, newick string, order []string, err error) {
 	// Return if matrix is not symmetric.
 	colDim := len(matrix[0])
 	rowDim := len(matrix)
