@@ -17,14 +17,6 @@ centroid and median methods were implemented using the generic algorithm.
 Specs for benchmark: single core on a 3.7 GHz Quad-Core Intel Xeon E5 processor
 with 32 GB RAM.
 
-Benchmark set for clustering: symmetric distance matrix of size N = 4157.
-
-| Linkage Method  | Time  |
-| --------------- | ----- |
-| complete        | 1.7s  |
-| median          | 1.82s |
-| single          | 1.78s |
-
 Benchmark set for distance: table with 4157 readouts by 199 measurements (calculating
 distance between the 4157 readouts).
 
@@ -33,6 +25,14 @@ distance between the 4157 readouts).
 | Canberra         | 5.1s  |
 | Euclidean        | 1.6s  |
 | maximum          | 2.8s  |
+
+Benchmark set for clustering: symmetric distance matrix of size N = 4157.
+
+| Linkage Method  | Time  |
+| --------------- | ----- |
+| complete        | 1.7s  |
+| median          | 1.82s |
+| single          | 1.78s |
 
 ## Tests
 
