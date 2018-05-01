@@ -51,7 +51,7 @@ func TestUpdateNN(t *testing.T) {
 	)
 
 	// TEST5: ward.
-	want = []float64{5.78, 5.78, 22.08, 23.67, 1.61, 0}
+	want = []float64{3.33, 3.33, 22.48, 25, 2.68, 0}
 	updateFunc, _ = UpdateNN("ward")
 	assert.InDeltaSlice(
 		t,

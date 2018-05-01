@@ -21,7 +21,7 @@ func TestUpdateGeneric(t *testing.T) {
 	assert.NotNil(t, err, "Unknown linkage method should return error")
 
 	// TEST2: centroid.
-	want := []float64{20.10, 15.61, 3.75, 1.16, 4.64, 0}
+	want := []float64{17.55, 14.15, 3.43, 0.23, 3.71, 0}
 	updateFunc, _ := UpdateGeneric("centroid")
 	assert.InDeltaSlicef(
 		t,
@@ -32,7 +32,7 @@ func TestUpdateGeneric(t *testing.T) {
 	)
 
 	// TEST3: median.
-	want = []float64{15.78, 12.64, 2.67, 2.9, 2.9, 0}
+	want = []float64{10.85, 10.15, 2.40, 1.45, 1.45, 0}
 	updateFunc, _ = UpdateGeneric("median")
 	assert.InDeltaSlicef(
 		t,

@@ -59,11 +59,11 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 			dim := len(x)
 			newRow = make([]float64, dim+1)
 			for i := 0; i < dim; i++ {
-				numerator := float64(nodeSize[a]+nodeSize[i]) * math.Pow(x[i], 2)
-				numerator += float64(nodeSize[b]+nodeSize[i]) * math.Pow(y[i], 2)
-				numerator -= float64(nodeSize[i]) * math.Pow(x[b], 2)
+				numerator := float64(nodeSize[a]+nodeSize[i]) * x[i]
+				numerator += float64(nodeSize[b]+nodeSize[i]) * y[i]
+				numerator -= float64(nodeSize[i]) * x[b]
 				denominator := float64(nodeSize[a] + nodeSize[b] + nodeSize[i])
-				newRow[i] = math.Sqrt(numerator / denominator)
+				newRow[i] = numerator / denominator
 			}
 			// Set self distance to zero.
 			newRow[dim] = 0

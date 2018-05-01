@@ -15,12 +15,12 @@ func UpdateGeneric(method string) (updateFunc func(matrix [][]float64, a, b int,
 			dim := len(x)
 			newRow = make([]float64, dim+1)
 			for i := 0; i < dim; i++ {
-				leftNumerator := float64(nodeSize[a]) * math.Pow(x[i], 2)
-				leftNumerator += float64(nodeSize[b]) * math.Pow(y[i], 2)
+				leftNumerator := float64(nodeSize[a]) * x[i]
+				leftNumerator += float64(nodeSize[b]) * y[i]
 				leftDenomimnator := float64(nodeSize[a] + nodeSize[b])
-				rightNumerator := float64(nodeSize[a]) * float64(nodeSize[b]) * math.Pow(x[b], 2)
+				rightNumerator := float64(nodeSize[a]) * float64(nodeSize[b]) * x[b]
 				rightDenomimnator := math.Pow(float64(nodeSize[a]+nodeSize[b]), 2)
-				newRow[i] = math.Sqrt((leftNumerator / leftDenomimnator) - (rightNumerator / rightDenomimnator))
+				newRow[i] = (leftNumerator / leftDenomimnator) - (rightNumerator / rightDenomimnator)
 			}
 			// Set self distance to zero.
 			newRow[dim] = 0
@@ -35,9 +35,10 @@ func UpdateGeneric(method string) (updateFunc func(matrix [][]float64, a, b int,
 			dim := len(x)
 			newRow = make([]float64, dim+1)
 			for i := 0; i < dim; i++ {
-				numerator := float64(2) * (math.Pow(x[i], 2) + math.Pow(y[i], 2))
-				numerator -= math.Pow(x[b], 2)
-				newRow[i] = math.Sqrt(numerator / float64(4))
+				numerator := float64(2) * (x[i] + y[i])
+
+				numerator -= x[b]
+				newRow[i] = numerator / float64(4)
 			}
 			// Set self distance to zero.
 			newRow[dim] = 0

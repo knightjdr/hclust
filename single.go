@@ -12,51 +12,45 @@ func Single(matrix [][]float64) (dendrogram []SubCluster) {
 	N := len(matrix)
 
 	// Leaf labels.
-	iterLabel := make([]int, N)
+	iterLabel := make([]int, N-1)
 
 	// Distance between leafs.
-	distance := make(map[string]float64, N)
-
-	// Zero labels and distance.
-	for i := 0; i < N; i++ {
-		iterLabel[i] = i
-		strLabel := strconv.Itoa(i)
-		distance[strLabel] = math.MaxFloat64
-	}
+	distance := make(map[string]float64, N-1)
 
 	// Current node.
-	c := iterLabel[0]
+	c := 0
+
+	// Zero labels and find min distance for first node distance.
+	for i := 0; i < N-1; i++ {
+		iterLabel[i] = i + 1
+		strLabel := strconv.Itoa(i + 1)
+		distance[strLabel] = matrix[c][i+1]
+	}
 
 	// Iterate until there is a single cluster remaining.
-	for i := 1; i < N; i++ {
-		// Remove current node from iterLabels.
-		cIndex := SliceIndex(len(iterLabel), func(j int) bool { return iterLabel[j] == c })
-		iterLabelNext := make([]int, len(iterLabel)-1)
-		if cIndex >= 0 {
-			iterLabelNext = append(iterLabel[:cIndex], iterLabel[cIndex+1:]...)
-		}
-
-		// Find leaf nearest to current node.
-		distanceNext := make(map[string]float64, len(iterLabelNext))
-		for _, label := range iterLabelNext {
-			strLabel := strconv.Itoa(label)
-			distanceNext[strLabel] = math.Min(distance[strLabel], matrix[label][c])
-		}
-
+	for i := 0; i < N-1; i++ {
 		// Nearest node.
-		nodeIndex := ArgMinSingle(distanceNext)
+		nodeIndex := ArgMinSingle(distance)
 		numIndex, _ := strconv.Atoi(nodeIndex)
 		dendrogram = append(
 			dendrogram,
-			SubCluster{c, numIndex, distanceNext[nodeIndex], distanceNext[nodeIndex]},
+			SubCluster{c, numIndex, distance[nodeIndex], distance[nodeIndex]},
 		)
 
 		// Change current node.
 		c = numIndex
 
-		// Update previous distance and labels.
-		distance = distanceNext
-		iterLabel = iterLabelNext
+		// Remove new current node from iterLabels.
+		cIndex := SliceIndex(len(iterLabel), func(j int) bool { return iterLabel[j] == c })
+		iterLabel = append(iterLabel[:cIndex], iterLabel[cIndex+1:]...)
+
+		// Update previous distance.
+		distanceLast := distance
+		distance = make(map[string]float64, len(iterLabel))
+		for _, label := range iterLabel {
+			strLabel := strconv.Itoa(label)
+			distance[strLabel] = math.Min(distanceLast[strLabel], matrix[label][c])
+		}
 	}
 
 	// Sort dendrogram.

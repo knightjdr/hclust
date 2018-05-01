@@ -108,7 +108,8 @@ func DistMetric(metric string) func(x []float64, y []float64) (dist float64, err
 		}
 		dist = 0
 		for i := range x {
-			dist += math.Pow(x[i]-y[i], 2)
+			diff := x[i] - y[i]
+			dist += diff * diff
 		}
 		dist = math.Sqrt(dist)
 		return

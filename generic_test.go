@@ -24,7 +24,7 @@ func TestGeneric(t *testing.T) {
 		{0, 4, 1, 1},
 		{1, 5, 4.06, 3.06},
 		{2, 3, 6.1, 6.1},
-		{6, 7, 4.52, 2.48},
+		{6, 7, 4.53, 2.48},
 	}
 	dendrogram, _ := Generic(dist, "centroid")
 	for i, cluster := range dendrogram {
@@ -57,11 +57,11 @@ func TestGeneric(t *testing.T) {
 	}
 
 	// TEST3: dendrogram for median method.
-	/* want = []SubCluster{
+	want = []SubCluster{
 		{0, 4, 1, 1},
-		{1, 5, 3.7, 2.7},
+		{1, 5, 4.06, 3.06},
 		{2, 3, 6.1, 6.1},
-		{6, 7, 2.79, 0.39},
+		{6, 7, 4.36, 2.32},
 	}
 	dendrogram, _ = Generic(dist, "median")
 	for i, cluster := range dendrogram {
@@ -91,5 +91,5 @@ func TestGeneric(t *testing.T) {
 			0.01,
 			"Dendrogram branch lengths not correct for median linkage",
 		)
-	} */
+	}
 }

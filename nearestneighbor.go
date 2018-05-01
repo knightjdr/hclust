@@ -1,6 +1,7 @@
 package hclust
 
 import (
+	"math"
 	"sort"
 )
 
@@ -9,6 +10,12 @@ import (
 func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster, err error) {
 	// Number of leafs.
 	N := len(matrix)
+
+	// Square the matrix for wards
+	dist := matrix
+	if method == "ward" {
+		dist = Square(matrix)
+	}
 
 	// Leaf labels.
 	labels := make([]int, N)
@@ -31,7 +38,6 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster
 	// Iterate until there is a single cluster remaining.
 	chain := make([]int, 0)
 	node := N // First node to add.
-	nodesAdded := make([]int, 0)
 	for len(labels) > 1 {
 		var a, b int
 
@@ -42,40 +48,49 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster
 
 		// Find nearest neighbor of node a.
 		for len(chain) < 3 || (a != chain[len(chain)-3]) {
-			c := ArgMinNN(matrix[a], a, b, nodesAdded)
+			c := ArgMinNN(dist[a], a, b)
 			b = a
 			a = c
 			chain = append(chain, a)
 		}
 
 		// Add new cluster to dendrogram.
-		dendrogram = append(dendrogram, SubCluster{a, b, matrix[a][b], matrix[a][b]})
+		dendrogram = append(dendrogram, SubCluster{a, b, dist[a][b], dist[a][b]})
 
 		// Remove a and b from labels.
 		aIndex := SliceIndex(len(labels), func(i int) bool { return labels[i] == a })
-		if aIndex >= 0 {
-			labels = append(labels[:aIndex], labels[aIndex+1:]...)
-		}
+		labels = append(labels[:aIndex], labels[aIndex+1:]...)
 		bIndex := SliceIndex(len(labels), func(i int) bool { return labels[i] == b })
-		if bIndex >= 0 {
-			labels = append(labels[:bIndex], labels[bIndex+1:]...)
-		}
+		labels = append(labels[:bIndex], labels[bIndex+1:]...)
 
 		// New node.
 		nodeSize[node] = nodeSize[a] + nodeSize[b]
 
 		// Update distance matrix with new node.
-		matrix = append(matrix, updateFunc(matrix, a, b, nodeSize))
+		dist = append(dist, updateFunc(dist, a, b, nodeSize)) // Add new row.
 		for i := 0; i < node; i++ {
-			matrix[i] = append(matrix[i], matrix[node][i])
+			// Add new column.
+			dist[i] = append(dist[i], dist[node][i])
+			// Set any current distances to A and B to max to exclude them from now on.
+			dist[i][a] = math.MaxFloat64
+			dist[i][b] = math.MaxFloat64
+			dist[node][a] = math.MaxFloat64
+			dist[node][b] = math.MaxFloat64
 		}
 
 		// Append node.
 		labels = append(labels, node)
 
-		// Increment node and add found nodes to exclude slice.
-		nodesAdded = append(nodesAdded, []int{a, b}...)
+		// Increment node.
 		node++
+	}
+
+	// Take the square root of all lengths for ward.
+	if method == "ward" {
+		for i := range dendrogram {
+			dendrogram[i].Lengtha = math.Sqrt(dendrogram[i].Lengtha)
+			dendrogram[i].Lengthb = math.Sqrt(dendrogram[i].Lengthb)
+		}
 	}
 
 	// Sort dendrogram.

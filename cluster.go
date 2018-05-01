@@ -43,7 +43,16 @@ func Cluster(matrix [][]float64, names []string, method string) (dendrogram []Su
 		dendrogram, err = NearestNeighbor(matrix, method)
 	} else if method == "ward" {
 		dendrogram, err = NearestNeighbor(matrix, method)
+	} else if method == "centroid" {
+		dendrogram, err = Generic(matrix, method)
+	} else if method == "median" {
+		dendrogram, err = Generic(matrix, method)
+	} else {
+		err = errors.New("Unkown linkage method")
 	}
+
+	// Get newick tree and cluster order.
+	Tree(dendrogram, names)
 
 	return
 }
