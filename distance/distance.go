@@ -1,5 +1,7 @@
-// Package hclust contains methods for clustering an input matrix.
-package hclust
+// Package distance contains methods generate a distance matrix.
+package distance
+
+import "github.com/knightjdr/hclust/matrixop"
 
 // Distance generates a square matrix of distance values calculated between row
 // vectors of an input matrix. Setting tranpose to true will calculate the distance matrix for
@@ -11,7 +13,7 @@ func Distance(matrix [][]float64, metric string, transpose bool) (dist [][]float
 
 	// Transpose matrix if requested.
 	if transpose {
-		matrix = Transpose(matrix)
+		matrix = matrixop.Transpose(matrix)
 	}
 
 	// Init distance matrix.

@@ -1,8 +1,9 @@
-package hclust
+package cluster
 
 import (
 	"testing"
 
+	"github.com/knightjdr/hclust/typedef"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,11 +17,11 @@ func TestSingle(t *testing.T) {
 	}
 
 	// TEST1: dendrogram.
-	want := []SubCluster{
-		{0, 4, 1, 1},
-		{5, 1, 1.9, 2.9},
-		{2, 3, 6.1, 6.1},
-		{6, 7, 4.15, 0.95},
+	want := []typedef.SubCluster{
+		{Leafa: 0, Leafb: 4, Lengtha: 1, Lengthb: 1, Node: 5},
+		{Leafa: 5, Leafb: 1, Lengtha: 1.9, Lengthb: 2.9, Node: 6},
+		{Leafa: 2, Leafb: 3, Lengtha: 6.1, Lengthb: 6.1, Node: 7},
+		{Leafa: 6, Leafb: 7, Lengtha: 4.15, Lengthb: 0.95, Node: 8},
 	}
 	dendrogram := Single(dist)
 	for i, cluster := range dendrogram {
@@ -28,13 +29,13 @@ func TestSingle(t *testing.T) {
 			t,
 			want[i].Leafa,
 			cluster.Leafa,
-			"Parent nodes not added to dendrogram correctly for single linkage",
+			"Leaf a not added to dendrogram correctly for single linkage",
 		)
 		assert.Equal(
 			t,
 			want[i].Leafb,
 			cluster.Leafb,
-			"Parent nodes not added to dendrogram correctly for single linkage",
+			"Leaf b not added to dendrogram correctly for single linkage",
 		)
 		assert.InDeltaf(
 			t,
@@ -49,6 +50,12 @@ func TestSingle(t *testing.T) {
 			cluster.Lengthb,
 			0.01,
 			"Dendrogram branch lengths not correct for single linkage",
+		)
+		assert.Equal(
+			t,
+			want[i].Node,
+			cluster.Node,
+			"Parent node in subcluster not correct",
 		)
 	}
 }

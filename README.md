@@ -4,13 +4,15 @@ Package for peforming hierachical clustering in Go.
 
 ## Methods
 
-Distance can be calculated using the binary, Canberra, Euclidean, Jaccard,
-Manhattan or maximum method. The linkage methods available are: average, centroid,
+Distance matrices can be calculated using the binary, Canberra, Euclidean, Jaccard,
+Manhattan or maximum metrics. The linkage methods available are: average, centroid,
 complete, McQuitty, median, single and Ward. The linkage method algorithms
-used are as recommended in [Mullner](https://arxiv.org/abs/1109.2378). Briefly,
+used are as recommended in [Müllner](https://arxiv.org/abs/1109.2378). Briefly,
 the single method was implemented using MST, the average, complete, McQuitty and
 Ward methods are implemented using the nearest-neighbor chain algorithm and the
-centroid and median methods were implemented using the generic algorithm.
+centroid and median methods were implemented using the generic algorithm. Leaf
+optimization is performed using the improved optimization approach of
+[Bar-Jospeh, et al.](https://www.ncbi.nlm.nih.gov/pubmed/11472989)
 
 ## Installation
 
@@ -23,48 +25,58 @@ centroid and median methods were implemented using the generic algorithm.
 ### Distance
 
 Setting the transpose argument to true will calculate distances between columns
-as apposed to rows.
+as apposed to rows. Euclidean distances will be calculated if an invalid metric
+is supplied.
 
-`Distance(matrix [][]float64, metric string, transpose bool) [][]float64`
+`hclust.Distance(matrix [][]float64, metric string, transpose bool) [][]float64`
 
 ### Cluster
 
 Cluster requires a symmetric distance matrix and a vector of names for the
-rows/columns. It will return a dendrogram with each row corresponding to a node,
-a newick tree and the names vector sorted based on the clustering order.
+rows/columns. It will return a dendrogram, a newick tree and the names vector
+sorted based on the clustering order. Each row in the dendrogram is a node
+containing the leafs/subnodes and the length of the branches to the leafs/subnodes.
 
 ```
+type Hclust struct {
+	Dendrogram []SubCluster
+	Newick     string
+	Order      []string
+}
+
 type SubCluster struct {
 	Leafa   int
 	Leafb   int
 	Lengtha float64
 	Lengthb float64
+	Node    int
 }
 
-Cluster(matrix [][]float64, names []string, method string) (dendrogram []SubCluster, newick string, order []string, err error)
+hclust.Cluster(matrix [][]float64, names []string, method string, optimize bool) (hclust Hclust, err error)
 ```
 
 ## Benchmarks
 
-Specs for benchmark: single core on a 3.7 GHz Quad-Core Intel Xeon E5 processor
-with 32 GB RAM.
+Benchmarking tests were performed using a single core on a 3.7 GHz Quad-Core
+Intel Xeon E5 processor with 32 GB RAM.
 
-Benchmark set for distance: table with 4157 readouts by 199 measurements (calculating
-distance between the 4157 readouts).
+Distance matrix benchmarks were measured using an input table with 4157 rows
+and 199 columns, with the distances calculated between rows.
 
-| Distance metric  | Time  |
-| ---------------- | ----- |
-| Canberra         | 5.1s  |
-| Euclidean        | 1.6s  |
-| maximum          | 2.8s  |
+| Distance metric  | Execution time  |
+| ---------------- | --------------- |
+| Canberra         | 5.1s            |
+| Euclidean        | 1.6s            |
+| maximum          | 2.8s            |
 
-Benchmark set for clustering: symmetric distance matrix of size N = 4157.
+Clustering benchmarks were measured using a symmetric distance matrix with dimensions
+4157×4157.
 
-| Linkage Method  | Time  |
-| --------------- | ----- |
-| complete        | 1.7s  |
-| median          | 1.82s |
-| single          | 1.78s |
+| Linkage Method  | Execution time |
+| --------------- | -------------- |
+| complete        | 1.7s           |
+| median          | 1.82s          |
+| single          | 1.78s          |
 
 ## Tests
 

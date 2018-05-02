@@ -1,13 +1,15 @@
-package hclust
+package tree
 
-type Union struct {
+import "github.com/knightjdr/hclust/typedef"
+
+type union struct {
 	Length    []float64
 	NextLabel int
 	Parent    []int
 }
 
 // Find highest incorporated parent node for a subnode n.
-func (u *Union) Find(n int, length float64) (int, float64) {
+func (u *union) Find(n int, length float64) (int, float64) {
 	p := n
 
 	// Find existing highest parent in dendrogram.
@@ -32,7 +34,7 @@ func (u *Union) Find(n int, length float64) (int, float64) {
 }
 
 // Set parent of most recently added node. Also set it's length.
-func (u *Union) AddParent(a, b int, length float64) {
+func (u *union) AddParent(a, b int, length float64) {
 	u.Length[u.NextLabel] = length
 	u.Parent[a] = u.NextLabel
 	u.Parent[b] = u.NextLabel
@@ -42,25 +44,34 @@ func (u *Union) AddParent(a, b int, length float64) {
 // AddNodes adds numbered nodes to a dendrogram and converts distances between
 // leafs to branch lengths. The first new node will be equal to the length of
 // the dendrogram.
-func AddNodes(dendrogram []SubCluster) (newDendrogram []SubCluster) {
+func AddNodes(dendrogram []typedef.SubCluster) (labelledDendrogram []typedef.SubCluster) {
 	// First parent node number.
-	N := len(dendrogram) + 1
+	n := len(dendrogram) + 1
 
-	// Create union. Unknown parent nodes and node lengths are -1.
+	// Create labels. Unknown parent nodes and node lengths are -1, i.e. not known.
 	length := make([]float64, 2*len(dendrogram)+1)
 	parent := make([]int, 2*len(dendrogram))
 	for i := range parent {
 		length[i] = -1
 		parent[i] = -1
 	}
-	union := Union{Length: length, NextLabel: N, Parent: parent}
+	labels := union{Length: length, NextLabel: n, Parent: parent}
 
 	// First node to add.
 	for _, subcluster := range dendrogram {
-		subnodeA, lengthA := union.Find(subcluster.Leafa, subcluster.Lengtha)
-		subnodeB, lengthB := union.Find(subcluster.Leafb, subcluster.Lengthb)
-		newDendrogram = append(newDendrogram, SubCluster{subnodeA, subnodeB, lengthA, lengthB})
-		union.AddParent(subnodeA, subnodeB, subcluster.Lengtha/float64(2))
+		subnodeA, lengthA := labels.Find(subcluster.Leafa, subcluster.Lengtha)
+		subnodeB, lengthB := labels.Find(subcluster.Leafb, subcluster.Lengthb)
+		labelledDendrogram = append(
+			labelledDendrogram,
+			typedef.SubCluster{
+				Leafa:   subnodeA,
+				Leafb:   subnodeB,
+				Lengtha: lengthA,
+				Lengthb: lengthB,
+				Node:    labels.NextLabel,
+			},
+		)
+		labels.AddParent(subnodeA, subnodeB, subcluster.Lengtha/float64(2))
 	}
 	return
 }

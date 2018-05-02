@@ -1,31 +1,35 @@
-package hclust
+package cluster
 
 import (
 	"math"
 	"sort"
+
+	"github.com/knightjdr/hclust/matrixop"
+	"github.com/knightjdr/hclust/tree"
+	"github.com/knightjdr/hclust/typedef"
 )
 
 // NearestNeighbor clusters a distance matrix using one of the following linkage
 // methods: average, complete, mcquitty or ward.
-func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster, err error) {
+func NearestNeighbor(matrix [][]float64, method string) (dendrogram []typedef.SubCluster, err error) {
 	// Number of leafs.
-	N := len(matrix)
+	n := len(matrix)
 
-	// Square the matrix for wards
+	// Square the matrix for ward.
 	dist := matrix
 	if method == "ward" {
-		dist = Square(matrix)
+		dist = matrixop.Square(matrix)
 	}
 
 	// Leaf labels.
-	labels := make([]int, N)
-	for i := 0; i < N; i++ {
+	labels := make([]int, n)
+	for i := 0; i < n; i++ {
 		labels[i] = i
 	}
 
 	// Number of leafs at each node (including node if it is a leaf).
-	nodeSize := make([]int, 2*N-1)
-	for i := 0; i < 2*N-1; i++ {
+	nodeSize := make([]int, 2*n-1)
+	for i := 0; i < 2*n-1; i++ {
 		nodeSize[i] = 1
 	}
 
@@ -37,7 +41,7 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster
 
 	// Iterate until there is a single cluster remaining.
 	chain := make([]int, 0)
-	node := N // First node to add.
+	node := n // First node to add.
 	for len(labels) > 1 {
 		var a, b int
 
@@ -46,7 +50,7 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster
 		chain = append(chain, a)
 		b = labels[1] // Grab any node besides a (grab second)
 
-		// Find nearest neighbor of node a.
+		// Find nearest neighbors.
 		for len(chain) < 3 || (a != chain[len(chain)-3]) {
 			c := ArgMinNN(dist[a], a, b)
 			b = a
@@ -55,12 +59,21 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster
 		}
 
 		// Add new cluster to dendrogram.
-		dendrogram = append(dendrogram, SubCluster{a, b, dist[a][b], dist[a][b]})
+		dendrogram = append(
+			dendrogram,
+			typedef.SubCluster{
+				Leafa:   a,
+				Leafb:   b,
+				Lengtha: dist[a][b],
+				Lengthb: dist[a][b],
+				Node:    node,
+			},
+		)
 
 		// Remove a and b from labels.
-		aIndex := SliceIndex(len(labels), func(i int) bool { return labels[i] == a })
+		aIndex := matrixop.SliceIndex(len(labels), func(i int) bool { return labels[i] == a })
 		labels = append(labels[:aIndex], labels[aIndex+1:]...)
-		bIndex := SliceIndex(len(labels), func(i int) bool { return labels[i] == b })
+		bIndex := matrixop.SliceIndex(len(labels), func(i int) bool { return labels[i] == b })
 		labels = append(labels[:bIndex], labels[bIndex+1:]...)
 
 		// New node.
@@ -99,7 +112,7 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []SubCluster
 	})
 
 	// Label dendrogram and add branch lengths.
-	dendrogram = AddNodes(dendrogram)
+	dendrogram = tree.AddNodes(dendrogram)
 
 	return
 }

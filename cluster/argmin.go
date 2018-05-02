@@ -1,10 +1,10 @@
-package hclust
+package cluster
 
 import (
 	"math"
 )
 
-// ArgMinNN finds the nearest neighbour (with the smallest distance)
+// ArgMinGeneric finds the nearest neighbour (with the smallest distance)
 // for a node using it's row from a distance matrix and only considering nodes
 // greater than it.
 func ArgMinGeneric(anchorDist []float64, anchor int) (nearest int) {

@@ -1,4 +1,4 @@
-package hclust
+package cluster
 
 import (
 	"errors"

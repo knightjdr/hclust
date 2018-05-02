@@ -1,4 +1,5 @@
-package hclust
+// Package matrixop contains methods for operating on matrices.
+package matrixop
 
 // Transpose transposes a 2D matrix (2D slice)
 func Transpose(matrix [][]float64) (transposed [][]float64) {

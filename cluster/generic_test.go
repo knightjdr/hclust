@@ -1,8 +1,9 @@
-package hclust
+package cluster
 
 import (
 	"testing"
 
+	"github.com/knightjdr/hclust/typedef"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,11 +21,11 @@ func TestGeneric(t *testing.T) {
 	assert.NotNil(t, err, "Invalid method should return error")
 
 	// TEST2: dendrogram for centroid method.
-	want := []SubCluster{
-		{0, 4, 1, 1},
-		{1, 5, 4.06, 3.06},
-		{2, 3, 6.1, 6.1},
-		{6, 7, 4.53, 2.48},
+	want := []typedef.SubCluster{
+		{Leafa: 0, Leafb: 4, Lengtha: 1, Lengthb: 1, Node: 5},
+		{Leafa: 1, Leafb: 5, Lengtha: 4.06, Lengthb: 3.06, Node: 6},
+		{Leafa: 2, Leafb: 3, Lengtha: 6.1, Lengthb: 6.1, Node: 7},
+		{Leafa: 6, Leafb: 7, Lengtha: 4.53, Lengthb: 2.48, Node: 8},
 	}
 	dendrogram, _ := Generic(dist, "centroid")
 	for i, cluster := range dendrogram {
@@ -32,13 +33,13 @@ func TestGeneric(t *testing.T) {
 			t,
 			want[i].Leafa,
 			cluster.Leafa,
-			"Parent nodes not added to dendrogram correctly for centroid linkage",
+			"Leaf a not added to dendrogram correctly for centroid linkage",
 		)
 		assert.Equal(
 			t,
 			want[i].Leafb,
 			cluster.Leafb,
-			"Parent nodes not added to dendrogram correctly for centroid linkage",
+			"Leaf b not added to dendrogram correctly for centroid linkage",
 		)
 		assert.InDeltaf(
 			t,
@@ -54,14 +55,20 @@ func TestGeneric(t *testing.T) {
 			0.01,
 			"Dendrogram branch lengths not correct for centroid linkage",
 		)
+		assert.Equal(
+			t,
+			want[i].Node,
+			cluster.Node,
+			"Parent node in subcluster not correct",
+		)
 	}
 
 	// TEST3: dendrogram for median method.
-	want = []SubCluster{
-		{0, 4, 1, 1},
-		{1, 5, 4.06, 3.06},
-		{2, 3, 6.1, 6.1},
-		{6, 7, 4.36, 2.32},
+	want = []typedef.SubCluster{
+		{Leafa: 0, Leafb: 4, Lengtha: 1, Lengthb: 1, Node: 5},
+		{Leafa: 1, Leafb: 5, Lengtha: 4.06, Lengthb: 3.06, Node: 6},
+		{Leafa: 2, Leafb: 3, Lengtha: 6.1, Lengthb: 6.1, Node: 7},
+		{Leafa: 6, Leafb: 7, Lengtha: 4.36, Lengthb: 2.32, Node: 8},
 	}
 	dendrogram, _ = Generic(dist, "median")
 	for i, cluster := range dendrogram {
@@ -69,13 +76,13 @@ func TestGeneric(t *testing.T) {
 			t,
 			want[i].Leafa,
 			cluster.Leafa,
-			"Parent nodes not added to dendrogram correctly for median linkage",
+			"Leaf a not added to dendrogram correctly for median linkage",
 		)
 		assert.Equal(
 			t,
 			want[i].Leafb,
 			cluster.Leafb,
-			"Parent nodes not added to dendrogram correctly for median linkage",
+			"Leaf b not added to dendrogram correctly for median linkage",
 		)
 		assert.InDeltaf(
 			t,
@@ -90,6 +97,12 @@ func TestGeneric(t *testing.T) {
 			cluster.Lengthb,
 			0.01,
 			"Dendrogram branch lengths not correct for median linkage",
+		)
+		assert.Equal(
+			t,
+			want[i].Node,
+			cluster.Node,
+			"Parent node in subcluster not correct",
 		)
 	}
 }
