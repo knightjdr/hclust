@@ -1,6 +1,10 @@
 package tree
 
-import "github.com/knightjdr/hclust/typedef"
+import (
+	"errors"
+
+	"github.com/knightjdr/hclust/typedef"
+)
 
 // Tree references a tree in newick format and the leaf order.
 type Tree struct {
@@ -10,7 +14,13 @@ type Tree struct {
 
 // Create generates a newick tree in string format and returns the order
 // of the clustering.
-func Create(dendrogram []typedef.SubCluster, names []string) (tree Tree) {
+func Create(dendrogram []typedef.SubCluster, names []string) (tree Tree, err error) {
+	// Return if names length does not match matix length.
+	if len(names) != len(dendrogram)+1 {
+		err = errors.New("The names vector must have the same dimension as the leaf number")
+		return
+	}
+
 	// Dendrogram clusters/leaf number.
 	n := len(dendrogram)
 

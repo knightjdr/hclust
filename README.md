@@ -32,18 +32,11 @@ is supplied.
 
 ### Cluster
 
-Cluster requires a symmetric distance matrix and a vector of names for the
-rows/columns. It will return a dendrogram, a newick tree and the names vector
-sorted based on the clustering order. Each row in the dendrogram is a node
+Cluster requires a symmetric distance matrix and a linkage method. It will return
+a dendrogram with each element in the dendrogram corresponding to a node
 containing the leafs/subnodes and the length of the branches to the leafs/subnodes.
 
 ```
-type Hclust struct {
-	Dendrogram []SubCluster
-	Newick     string
-	Order      []string
-}
-
 type SubCluster struct {
 	Leafa   int
 	Leafb   int
@@ -52,7 +45,35 @@ type SubCluster struct {
 	Node    int
 }
 
-hclust.Cluster(matrix [][]float64, names []string, method string, optimize bool) (hclust Hclust, err error)
+hclust.Cluster(matrix [][]float64, method string) (dendrogram []typedef.SubCluster, err error)
+```
+
+### Optimize
+
+Optimize takes the dendrogram produced by hclust.Cluster and the distance matrix produced
+hclust.Distance and optimizes the leaf ordering. The dendrogram from hclust.Cluster
+should be input as produced by that method without any modifications.
+
+`
+hclust.Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []typedef.SubCluster)
+`
+
+### Tree
+
+Tree takes the dendrogram produced by hclust.Cluster or hclust.Optimize and a list
+of names for the leaves and generates a newick tree. It also returns the "names"
+vector sorted based on the clustering order. The input "names" vector should be
+in the same order as the rows/columns of the distance matrix used for clustering.
+The dendrogram from hclust.Cluster or hclust.Optimize should be input as produced by
+those methods without any modifications.
+
+```
+type Tree struct {
+	Newick     string
+	Order      []string
+}
+
+hclust.Tree(dendrogram []typedef.SubCluster, names []string) (tree Tree, err error)
 ```
 
 ## Benchmarks

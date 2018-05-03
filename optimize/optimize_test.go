@@ -1,4 +1,4 @@
-package tree
+package optimize
 
 import (
 	"testing"
@@ -32,5 +32,28 @@ func TestOptimize(t *testing.T) {
 		{Leafa: 7, Leafb: 9, Lengtha: 0.225, Lengthb: 0.1, Node: 10},
 	}
 	optimized := Optimize(dendrogram, dist)
+	assert.Equal(t, want, optimized, "Dendrogram not optimized correctly")
+
+	// TEST2: test another tree.
+	dendrogram = []typedef.SubCluster{
+		{Leafa: 0, Leafb: 4, Lengtha: 1, Lengthb: 1, Node: 5},
+		{Leafa: 1, Leafb: 5, Lengtha: 3.95, Lengthb: 2.95, Node: 6},
+		{Leafa: 2, Leafb: 3, Lengtha: 6.1, Lengthb: 6.1, Node: 7},
+		{Leafa: 6, Leafb: 7, Lengtha: 4.71, Lengthb: 2.56, Node: 8},
+	}
+	dist = [][]float64{
+		{0, 7.91, 17.7, 17.6, 2},
+		{7.91, 0, 17.33, 17.32, 7.9},
+		{17.7, 17.33, 0, 12.2, 17.5},
+		{17.6, 17.32, 12.2, 0, 17.4},
+		{2, 7.9, 17., 17.4, 0},
+	}
+	want = []typedef.SubCluster{
+		{Leafa: 0, Leafb: 4, Lengtha: 1, Lengthb: 1, Node: 5},
+		{Leafa: 5, Leafb: 1, Lengtha: 2.95, Lengthb: 3.95, Node: 6},
+		{Leafa: 3, Leafb: 2, Lengtha: 6.1, Lengthb: 6.1, Node: 7},
+		{Leafa: 6, Leafb: 7, Lengtha: 4.71, Lengthb: 2.56, Node: 8},
+	}
+	optimized = Optimize(dendrogram, dist)
 	assert.Equal(t, want, optimized, "Dendrogram not optimized correctly")
 }

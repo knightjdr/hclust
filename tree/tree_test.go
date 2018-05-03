@@ -21,7 +21,7 @@ func TestCreate(t *testing.T) {
 		Newick: "((leaf2:0.075,leaf5:0.075):0.225,(leaf4:0.2,(leaf1:0.1,(leaf0:0.05,leaf3:0.05):0.05):0.1):0.1)",
 		Order:  []string{"leaf2", "leaf5", "leaf4", "leaf1", "leaf0", "leaf3"},
 	}
-	level := Create(dendrogram, names)
+	level, _ := Create(dendrogram, names)
 	assert.Equal(t, want.Order, level.Order, "Leafs not ordered correctly")
 	assert.Equal(t, want.Newick, level.Newick, "Newick not formatted correctly")
 
@@ -37,7 +37,12 @@ func TestCreate(t *testing.T) {
 		Newick: "((leaf1:3.95,(leaf0:1,leaf4:1):2.95):4.71,(leaf2:6.1,leaf3:6.1):2.56)",
 		Order:  []string{"leaf1", "leaf0", "leaf4", "leaf2", "leaf3"},
 	}
-	level = Create(dendrogram, names)
+	level, _ = Create(dendrogram, names)
 	assert.Equal(t, want.Order, level.Order, "Leafs not ordered correctly")
 	assert.Equal(t, want.Newick, level.Newick, "Newick not formatted correctly")
+
+	// TEST3: names vectors of incorrect length.
+	names = []string{"leaf0"}
+	_, err := Create(dendrogram, names)
+	assert.NotNil(t, err, "Incorrect length of names vector should return an error")
 }

@@ -1,4 +1,5 @@
-package tree
+// Package optimize optimizes the clustering order.
+package optimize
 
 import (
 	"github.com/knightjdr/hclust/matrixop"
@@ -38,13 +39,15 @@ func optimal(n, node, leaf int, leafs []int, nodeScores map[int]float64, dist []
 // Optimize optimizes the leafs ordering of a dendrogram using the method
 // of Bar-Joseph, et al. 2001.
 func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []typedef.SubCluster) {
-	// Number of nodes and leafs.
+
+	// Number of nodes.
 	n := len(dendrogram)
 
 	// Get leafs beneath each node and group them into two pools: leafs on the left (a)
 	// go into one slice and nodes on the right (b) go into a second slice.
 	nodeLeafs := make(map[int]leafs, n)
 	for _, cluster := range dendrogram {
+
 		// Get first group of leafs.
 		aLeafs := make([]int, 0)
 		if cluster.Leafa <= n { // If Leaf is a leaf.
@@ -53,6 +56,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 			aLeafs = append(aLeafs, nodeLeafs[cluster.Leafa].a...)
 			aLeafs = append(aLeafs, nodeLeafs[cluster.Leafa].b...)
 		}
+
 		// Get second group of leafs.
 		bLeafs := make([]int, 0)
 		if cluster.Leafb <= n {
@@ -70,18 +74,23 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		node := cluster.Node
 		leafs := append(nodeLeafs[node].a, nodeLeafs[node].b...)
 		totalLeafs := len(leafs)
-		// Initialize 2- and 3D of map.
+
+		// Initialize 2- and 3D map.
 		m[node] = make(map[int]map[int]float64, totalLeafs)
 		for _, leaf := range leafs {
 			m[node][leaf] = make(map[int]float64, totalLeafs)
 		}
+
 		// Iterate over leafs in pool a and compare against pool b.
 		for _, aLeaf := range nodeLeafs[node].a {
+
 			// Find optimal order for j as leftmost leaf.
 			optScoreA := optimal(n, cluster.Leafa, aLeaf, nodeLeafs[node].a, m[cluster.Leafa][aLeaf], dist)
 			for _, bLeaf := range nodeLeafs[node].b {
+
 				// Find optimal order for k as rightmost leaf.
 				optScoreB := optimal(n, cluster.Leafb, bLeaf, nodeLeafs[node].b, m[cluster.Leafb][bLeaf], dist)
+
 				// Calculate score for current node with order j, k.
 				optScore := optScoreA + optScoreB + dist[aLeaf][bLeaf]
 				m[node][aLeaf][bLeaf] = optScore
@@ -100,6 +109,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 	// Iterate over nodes and reorder as needed
 	for i := n - 1; i >= 0; i-- {
 		node := optimized[i].Node
+
 		// Find best leaf pair.
 		maxDiff := float64(0)
 		var outerA, outerB int
