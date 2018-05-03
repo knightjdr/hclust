@@ -2,6 +2,9 @@
 package optimize
 
 import (
+	"math"
+	"sort"
+
 	"github.com/knightjdr/hclust/matrixop"
 	"github.com/knightjdr/hclust/typedef"
 )
@@ -16,22 +19,43 @@ type leafs struct {
 	b []int
 }
 
-func optimal(n, node, leaf int, leafs []int, nodeScores map[int]float64, dist [][]float64) (score float64) {
-	// Current best minimal score.
-	score = 0
-	if node == leaf {
-		return
-	} else {
-		// Remove current leaf from leafs slice.
-		leafIndex := matrixop.SliceIndex(len(leafs), func(i int) bool { return leafs[i] == leaf })
-		availableLeafs := make([]int, len(leafs))
-		copy(availableLeafs, leafs)
-		availableLeafs = append(availableLeafs[:leafIndex], availableLeafs[leafIndex+1:]...)
-		for _, leafb := range availableLeafs {
-			if nodeScores[leafb] > score {
-				score = nodeScores[leafb]
+func optimal(nodea, nodeb, leafa, leafb int, aSortOrder, bSortOrder []int, minDist float64, nodeScores map[int]map[int]map[int]float64, dist [][]float64) (score float64) {
+	// Current best maximal score.
+	score = math.MaxFloat64
+	for _, leftIndex := range aSortOrder {
+		ma := nodeScores[nodea][leafa][leftIndex]
+		if ma+nodeScores[nodeb][leafb][bSortOrder[0]]+minDist >= score {
+			return
+		}
+		for _, rightIndex := range bSortOrder {
+			mb := nodeScores[nodeb][leafb][rightIndex]
+			if ma+mb+minDist >= score {
+				break
+			} else if score > ma+mb+dist[leftIndex][rightIndex] {
+				score = ma + mb + dist[leftIndex][rightIndex]
 			}
 		}
+	}
+	return
+}
+
+func sortMap(mapArray map[int]float64) (sortOrder []int) {
+	type kv struct {
+		key   int
+		value float64
+	}
+
+	var mapObject []kv
+	for k, v := range mapArray {
+		mapObject = append(mapObject, kv{key: k, value: v})
+	}
+
+	sort.Slice(mapObject, func(i, j int) bool {
+		return mapObject[i].value < mapObject[j].value
+	})
+
+	for i := range mapObject {
+		sortOrder = append(sortOrder, mapObject[i].key)
 	}
 	return
 }
@@ -68,8 +92,15 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		nodeLeafs[cluster.Node] = leafs{a: aLeafs, b: bLeafs}
 	}
 
+	// Initialize score map and set zero values for leafs
+	m := make(map[int]map[int]map[int]float64, 2*n+1) // Optimal ordering map.
+	for i := 0; i <= n; i++ {
+		m[i] = make(map[int]map[int]float64, 1)
+		m[i][i] = make(map[int]float64, 1)
+		m[i][i][i] = 0
+	}
+
 	// Calculate optimal ordering score for each node.
-	m := make(map[int]map[int]map[int]float64, n) // Optimal ordering map.
 	for _, cluster := range dendrogram {
 		node := cluster.Node
 		leafs := append(nodeLeafs[node].a, nodeLeafs[node].b...)
@@ -81,18 +112,28 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 			m[node][leaf] = make(map[int]float64, totalLeafs)
 		}
 
-		// Iterate over leafs in pool a and compare against pool b.
+		// Calculate min distance between all leafs in pool a against those in pool b.
+		minDist := float64(0)
+		for _, aLeaf := range nodeLeafs[node].a {
+			for _, bLeaf := range nodeLeafs[node].b {
+				if dist[aLeaf][bLeaf] < minDist {
+					minDist = dist[aLeaf][bLeaf]
+				}
+			}
+		}
+
+		// Iterate over leafs in pool a and b and generate scores.
 		for _, aLeaf := range nodeLeafs[node].a {
 
-			// Find optimal order for j as leftmost leaf.
-			optScoreA := optimal(n, cluster.Leafa, aLeaf, nodeLeafs[node].a, m[cluster.Leafa][aLeaf], dist)
+			// Sort left nodes scores.
+			aSortOrder := sortMap(m[cluster.Leafa][aLeaf])
 			for _, bLeaf := range nodeLeafs[node].b {
 
-				// Find optimal order for k as rightmost leaf.
-				optScoreB := optimal(n, cluster.Leafb, bLeaf, nodeLeafs[node].b, m[cluster.Leafb][bLeaf], dist)
+				// Sort right nodes scores.
+				bSortOrder := sortMap(m[cluster.Leafb][bLeaf])
 
-				// Calculate score for current node with order j, k.
-				optScore := optScoreA + optScoreB + dist[aLeaf][bLeaf]
+				// Calculate score for current node.
+				optScore := optimal(cluster.Leafa, cluster.Leafb, aLeaf, bLeaf, aSortOrder, bSortOrder, minDist, m, dist)
 				m[node][aLeaf][bLeaf] = optScore
 				m[node][bLeaf][aLeaf] = optScore
 			}
@@ -111,20 +152,20 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		node := optimized[i].Node
 
 		// Find best leaf pair.
-		maxDiff := float64(0)
+		minDiff := math.MaxFloat64
 		var outerA, outerB int
 		if constrain[node].left >= 0 {
 			for leafb, value := range m[node][constrain[node].left] {
-				if value > maxDiff {
-					maxDiff = value
+				if value < minDiff {
+					minDiff = value
 					outerB = leafb
 				}
 			}
 			outerA = constrain[node].left
 		} else if constrain[node].right >= 0 {
 			for leafa, value := range m[node][constrain[node].right] {
-				if value > maxDiff {
-					maxDiff = value
+				if value < minDiff {
+					minDiff = value
 					outerA = leafa
 				}
 			}
@@ -132,8 +173,8 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		} else {
 			for leafa := range m[node] {
 				for leafb, value := range m[node][leafa] {
-					if value > maxDiff {
-						maxDiff = value
+					if value < minDiff {
+						minDiff = value
 						outerA = leafa
 						outerB = leafb
 					}
