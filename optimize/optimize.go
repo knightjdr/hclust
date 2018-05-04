@@ -2,6 +2,7 @@
 package optimize
 
 import (
+	"fmt"
 	"math"
 	"sort"
 
@@ -112,22 +113,23 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 			m[node][leaf] = make(map[int]float64, totalLeafs)
 		}
 
-		// Calculate min distance between all leafs in pool a against those in pool b.
-		minDist := float64(0)
-		for _, aLeaf := range nodeLeafs[node].a {
-			for _, bLeaf := range nodeLeafs[node].b {
-				if dist[aLeaf][bLeaf] < minDist {
-					minDist = dist[aLeaf][bLeaf]
-				}
-			}
-		}
-
 		// Iterate over leafs in pool a and b and generate scores.
 		for _, aLeaf := range nodeLeafs[node].a {
 
 			// Sort left nodes scores.
 			aSortOrder := sortMap(m[cluster.Leafa][aLeaf])
 			for _, bLeaf := range nodeLeafs[node].b {
+
+				// Calculate min distance between all rightmost leafs of aLeaf and
+				// leftmost leafs of bLeaf.
+				minDist := math.MaxFloat32
+				for rightALeaf := range m[cluster.Leafa][aLeaf] {
+					for leftBLeaf := range m[cluster.Leafb][bLeaf] {
+						if dist[rightALeaf][leftBLeaf] < minDist {
+							minDist = dist[rightALeaf][leftBLeaf]
+						}
+					}
+				}
 
 				// Sort right nodes scores.
 				bSortOrder := sortMap(m[cluster.Leafb][bLeaf])
@@ -139,6 +141,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 			}
 		}
 	}
+	fmt.Println(m)
 
 	// Re-order dendrogram.
 	optimized = dendrogram
