@@ -16,9 +16,11 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []typedef.Su
 	n := len(matrix)
 
 	// Square the matrix for ward.
-	dist := matrix
+	dist := make([][]float64, n)
 	if method == "ward" {
 		dist = matrixop.Square(matrix)
+	} else {
+		dist = matrix
 	}
 
 	// Leaf labels.
@@ -84,6 +86,7 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []typedef.Su
 		for i := 0; i < node; i++ {
 			// Add new column.
 			dist[i] = append(dist[i], dist[node][i])
+
 			// Set any current distances to A and B to max to exclude them from now on.
 			dist[i][a] = math.MaxFloat64
 			dist[i][b] = math.MaxFloat64

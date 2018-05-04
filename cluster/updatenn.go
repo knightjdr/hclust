@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-// UpdateNN calculates the new row/column to add to a distance matrix for a new node.
+// UpdateNN calculates the row/column to add to a distance matrix for a new node.
 // Methods supported: average, complete, mcquitty or ward.
 func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64), err error) {
 	if method == "average" {
@@ -19,6 +19,7 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 				denominator := float64(nodeSize[a] + nodeSize[b])
 				newRow[i] = numerator / denominator
 			}
+
 			// Set self distance to zero.
 			newRow[dim] = 0
 			return
@@ -33,6 +34,7 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 			for i := 0; i < dim; i++ {
 				newRow[i] = math.Max(x[i], y[i])
 			}
+
 			// Set self distance to zero.
 			newRow[dim] = 0
 			return
@@ -47,6 +49,7 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 			for i := 0; i < dim; i++ {
 				newRow[i] = (x[i] + y[i]) / float64(2)
 			}
+
 			// Set self distance to zero.
 			newRow[dim] = 0
 			return
@@ -65,6 +68,7 @@ func UpdateNN(method string) (updateFunc func(matrix [][]float64, a, b int, node
 				denominator := float64(nodeSize[a] + nodeSize[b] + nodeSize[i])
 				newRow[i] = numerator / denominator
 			}
+
 			// Set self distance to zero.
 			newRow[dim] = 0
 			return

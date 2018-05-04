@@ -28,19 +28,24 @@ func Descend(leafNum, node int, nodeMap map[int]int, dendrogram []typedef.SubClu
 		length := strconv.FormatFloat(dendrogram[dendIndex].Lengtha, 'f', -1, 64)
 		leftString := fmt.Sprintf("(%s:%s,", leaf, length)
 		level.NewickArr = append([]string{leftString}, level.NewickArr...)
+
 		// Prepend new leaf to order.
 		level.Order = append([]string{leaf}, level.Order...)
 	} else {
 		// Descend.
 		left := Descend(leafNum, dendrogram[dendIndex].Leafa, nodeMap, dendrogram, names)
+
 		// Prepend newick arr.
 		level.NewickArr = append(left.NewickArr, level.NewickArr...)
+
 		// Create new string for branch length and append to newick array.
 		length := strconv.FormatFloat(dendrogram[dendIndex].Lengtha, 'f', -1, 64)
 		leftString := fmt.Sprintf(":%s,", length)
 		level.NewickArr = append(level.NewickArr, leftString)
+
 		// Prepend opening bracket for branch.
 		level.NewickArr = append([]string{"("}, level.NewickArr...)
+
 		// Prepend subnode to order.
 		level.Order = append(left.Order, level.Order...)
 	}
@@ -52,17 +57,21 @@ func Descend(leafNum, node int, nodeMap map[int]int, dendrogram []typedef.SubClu
 		length := strconv.FormatFloat(dendrogram[dendIndex].Lengthb, 'f', -1, 64)
 		rightString := fmt.Sprintf("%s:%s)", leaf, length)
 		level.NewickArr = append(level.NewickArr, rightString)
+
 		// Append new leaf to order.
 		level.Order = append(level.Order, leaf)
 	} else {
 		// Descend.
 		right := Descend(leafNum, dendrogram[dendIndex].Leafb, nodeMap, dendrogram, names)
+
 		// Apend newick arr.
 		level.NewickArr = append(level.NewickArr, right.NewickArr...)
+
 		// Create new string for branch length and append to newick array.
 		length := strconv.FormatFloat(dendrogram[dendIndex].Lengthb, 'f', -1, 64)
 		rightString := fmt.Sprintf(":%s)", length)
 		level.NewickArr = append(level.NewickArr, rightString)
+
 		// Append subnode to order.
 		level.Order = append(level.Order, right.Order...)
 	}

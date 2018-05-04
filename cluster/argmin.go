@@ -5,13 +5,13 @@ import (
 )
 
 // ArgMinGeneric finds the nearest neighbour (with the smallest distance)
-// for a node using it's row from a distance matrix and only considering nodes
+// for a node using its row from a distance matrix and only considering nodes
 // greater than it.
 func ArgMinGeneric(anchorDist []float64, anchor int) (nearest int) {
 	dim := len(anchorDist)
 	dist := math.MaxFloat64
-	// Find lowest value in anchorDist slice not equal to anchor. Do this in two
-	// steps to skip an if statement that excludes anchor.
+
+	// Find lowest value in anchorDist slice greater than anchor.
 	for i := anchor + 1; i < dim; i++ {
 		if anchorDist[i] < dist {
 			dist = anchorDist[i]
@@ -22,11 +22,12 @@ func ArgMinGeneric(anchorDist []float64, anchor int) (nearest int) {
 }
 
 // ArgMinNN finds the nearest neighbour (with the smallest distance)
-// for a node using it's row from a distance matrix with a preference for another
+// for a node using its row from a distance matrix with a preference for another
 // node if specified and excluding anything in "exclude".
 func ArgMinNN(anchorDist []float64, anchor, preference int) (nearest int) {
 	dim := len(anchorDist)
 	dist := math.MaxFloat64
+
 	// Find lowest value in anchorDist slice not equal to anchor. Do this in two
 	// steps to skip an if statement that excludes anchor.
 	for i := 0; i < anchor; i++ {
@@ -41,7 +42,8 @@ func ArgMinNN(anchorDist []float64, anchor, preference int) (nearest int) {
 			nearest = i
 		}
 	}
-	// Check if prefered index has a distance matching lowest distance. iI so, use it.
+
+	// Check if prefered index has a distance matching lowest distance. If so, use it.
 	if preference >= 0 && anchorDist[preference] == dist {
 		nearest = preference
 	}

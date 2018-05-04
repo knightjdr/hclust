@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-// UpdateGeneric calculates the new row/column to add to a distance matrix for a new node.
+// UpdateGeneric calculates the row/column to add to a distance matrix for a new node.
 // Methods supported: centroid or median.
 func UpdateGeneric(method string) (updateFunc func(matrix [][]float64, a, b int, nodeSize []int) (newRow []float64), err error) {
 	if method == "centroid" {
@@ -22,6 +22,7 @@ func UpdateGeneric(method string) (updateFunc func(matrix [][]float64, a, b int,
 				rightDenomimnator := math.Pow(float64(nodeSize[a]+nodeSize[b]), 2)
 				newRow[i] = (leftNumerator / leftDenomimnator) - (rightNumerator / rightDenomimnator)
 			}
+
 			// Set self distance to zero.
 			newRow[dim] = 0
 			return
@@ -40,6 +41,7 @@ func UpdateGeneric(method string) (updateFunc func(matrix [][]float64, a, b int,
 				numerator -= x[b]
 				newRow[i] = numerator / float64(4)
 			}
+
 			// Set self distance to zero.
 			newRow[dim] = 0
 			return

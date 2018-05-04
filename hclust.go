@@ -17,5 +17,5 @@ var Distance = distance.Distance
 // Optimize references the main leaf optimization method in the optimize subpackage.
 var Optimize = optimize.Optimize
 
-// Tree references the main method for generating newick tree in the tree subpackage.
+// Tree references the main method for generating the newick tree in the tree subpackage.
 var Tree = tree.Create

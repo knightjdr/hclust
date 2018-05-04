@@ -17,7 +17,7 @@ func (u *union) Find(n int, length float64) (int, float64) {
 		n = u.Parent[n]
 	}
 
-	// Redefine parent of node n (and it's parents) to highest available.
+	// Redefine parent of node n (and its parents) to highest available.
 	// This makes subsequent searches for top parent faster.
 	for p > -1 && u.Parent[p] != n {
 		currP := p
@@ -33,7 +33,7 @@ func (u *union) Find(n int, length float64) (int, float64) {
 	return n, nodeLength
 }
 
-// Set parent of most recently added node. Also set it's length.
+// Set parent of most recently added node. Also set its length.
 func (u *union) AddParent(a, b int, length float64) {
 	u.Length[u.NextLabel] = length
 	u.Parent[a] = u.NextLabel

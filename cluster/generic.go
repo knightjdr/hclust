@@ -9,8 +9,8 @@ import (
 	"github.com/knightjdr/hclust/typedef"
 )
 
-// NeighborInfo stores information about a nodes nearest neighbor.
-type NeighborInfo struct {
+// neighborInfo stores information about a nodes nearest neighbor.
+type neighborInfo struct {
 	Dist     float64
 	Index    int
 	Neighbor int
@@ -28,7 +28,7 @@ func Generic(matrix [][]float64, method string) (dendrogram []typedef.SubCluster
 	// Number of leafs.
 	n := len(matrix)
 
-	// Square values in matrix
+	// Square values in matrix.
 	dist := matrixop.Square(matrix)
 
 	// Leaf labels.
@@ -44,14 +44,15 @@ func Generic(matrix [][]float64, method string) (dendrogram []typedef.SubCluster
 	}
 
 	// Generate queue with nearest neighbor list.
-	queue := make([]NeighborInfo, n)
+	queue := make([]neighborInfo, n)
 	for i := 0; i < n-1; i++ {
 		neighbor := ArgMinGeneric(dist[i], i)
-		queue[i] = NeighborInfo{dist[i][neighbor], i, neighbor}
+		queue[i] = neighborInfo{dist[i][neighbor], i, neighbor}
 	}
+
 	// Add last node with itself as nearest neighbor and infinite distance. Need
 	// this for code logic below.
-	queue[n-1] = NeighborInfo{math.MaxFloat64, n - 1, n - 1}
+	queue[n-1] = neighborInfo{math.MaxFloat64, n - 1, n - 1}
 
 	// Sort queue.
 	sort.SliceStable(queue, func(i, j int) bool {
@@ -70,7 +71,7 @@ func Generic(matrix [][]float64, method string) (dendrogram []typedef.SubCluster
 		// nodes get created.
 		for delta != dist[a][b] {
 			neighbor := ArgMinGeneric(dist[a], a)
-			queue[0] = NeighborInfo{dist[a][neighbor], a, neighbor}
+			queue[0] = neighborInfo{dist[a][neighbor], a, neighbor}
 			// Re-sort queue if a is no longer part of tighest cluster.
 			if len(queue) > 1 && queue[0].Dist > queue[1].Dist {
 				sort.SliceStable(queue, func(j, k int) bool {
@@ -114,6 +115,7 @@ func Generic(matrix [][]float64, method string) (dendrogram []typedef.SubCluster
 		for j := 0; j < node; j++ {
 			// Add new column.
 			dist[j] = append(dist[j], dist[node][j])
+
 			// Set any current distances to a and b to max to exclude them from now on.
 			dist[j][a] = math.MaxFloat64
 			dist[j][b] = math.MaxFloat64
@@ -134,11 +136,12 @@ func Generic(matrix [][]float64, method string) (dendrogram []typedef.SubCluster
 		// best match.
 		if b != node-1 {
 			previousIndex := matrixop.SliceIndex(len(queue), func(j int) bool { return queue[j].Index == node-1 })
-			queue[previousIndex] = NeighborInfo{dist[node-1][node], node - 1, node}
+			queue[previousIndex] = neighborInfo{dist[node-1][node], node - 1, node}
 		}
+
 		// Add the new node to the queue. Reference itself as its best match with
 		// infinite distance.
-		queue = append(queue, NeighborInfo{math.MaxFloat64, node, node})
+		queue = append(queue, neighborInfo{math.MaxFloat64, node, node})
 
 		// Re-sort queue.
 		sort.SliceStable(queue, func(j, k int) bool {

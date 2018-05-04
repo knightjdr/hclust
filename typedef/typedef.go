@@ -1,4 +1,4 @@
-// Package typedef has type definitions used throught the clust package.
+// Package typedef has type definitions used throughout the hclust package.
 package typedef
 
 // SubCluster stores the node, distance and names of leafs for a subcluster.

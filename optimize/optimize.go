@@ -19,6 +19,8 @@ type leafs struct {
 	b []int
 }
 
+// Optimal implements the "fast" leaf optimization approach of Bar-Joseph et al.
+// 2001. See Figure 4.
 func optimal(aSortOrder, bSortOrder []int, minDist float64, nodeScoresA map[int]float64, nodeScoresB map[int]float64, dist [][]float64) (score float64) {
 	// Current best maximal score.
 	score = math.MaxFloat64
@@ -39,23 +41,25 @@ func optimal(aSortOrder, bSortOrder []int, minDist float64, nodeScoresA map[int]
 	return
 }
 
-func sortMap(mapArray map[int]float64) (sortOrder []int) {
+// SortMap sorts a map in descending order based on its keys.
+func sortMap(unsortedMap map[int]float64) (sortOrder []int) {
 	type kv struct {
 		key   int
 		value float64
 	}
 
-	var mapObject []kv
-	for k, v := range mapArray {
-		mapObject = append(mapObject, kv{key: k, value: v})
+	// Convert map to a slice of kv type.
+	var mapAsSlice []kv
+	for k, v := range unsortedMap {
+		mapAsSlice = append(mapAsSlice, kv{key: k, value: v})
 	}
 
-	sort.Slice(mapObject, func(i, j int) bool {
-		return mapObject[i].value < mapObject[j].value
+	sort.Slice(mapAsSlice, func(i, j int) bool {
+		return mapAsSlice[i].value < mapAsSlice[j].value
 	})
 
-	for i := range mapObject {
-		sortOrder = append(sortOrder, mapObject[i].key)
+	for i := range mapAsSlice {
+		sortOrder = append(sortOrder, mapAsSlice[i].key)
 	}
 	return
 }
@@ -92,8 +96,12 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		nodeLeafs[cluster.Node] = leafs{a: aLeafs, b: bLeafs}
 	}
 
-	// Initialize score map and set zero values for leafs
-	m := make(map[int]map[int]map[int]float64, 2*n+1) // Optimal ordering map.
+	// Initialize score map and set zero values for leafs. This is a 3D map with
+	// the first dimension corresponding a node and the second and third
+	// dimensions corresponding to leaf pairs. The 2D leaf will be the left most
+	// leaf of a pair and the 3D leaf will be its rightmost pair. The float64
+	// value is the between-leaf distance for that pair.
+	m := make(map[int]map[int]map[int]float64, 2*n+1)
 	for i := 0; i <= n; i++ {
 		m[i] = make(map[int]map[int]float64, 1)
 		m[i][i] = make(map[int]float64, 1)
@@ -106,7 +114,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		numLeafsA := len(nodeLeafs[node].a)
 		numLeafsB := len(nodeLeafs[node].b)
 
-		// Initialize 2D and 3D map.
+		// Initialize 2D and 3D maps.
 		m[node] = make(map[int]map[int]float64, numLeafsA+numLeafsB)
 		for _, leaf := range nodeLeafs[node].a {
 			m[node][leaf] = make(map[int]float64, numLeafsB)
@@ -145,15 +153,17 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 	}
 
 	// Re-order dendrogram.
-	optimized = dendrogram
+	optimized = make([]typedef.SubCluster, n)
+	copy(optimized, dendrogram)
 
-	// Constraints contains the left and right contraints for each node.
+	// Constraints contains the left and right contraints for each node. -1 is used
+	// to indicate there is no constraint.
 	constrain := make(map[int]constraints, n)
-	constrain[optimized[n-1].Node] = constraints{left: -1, right: -1}
+	constrain[dendrogram[n-1].Node] = constraints{left: -1, right: -1}
 
-	// Iterate over nodes and reorder as needed
+	// Iterate over nodes and reorder as needed.
 	for i := n - 1; i >= 0; i-- {
-		node := optimized[i].Node
+		node := dendrogram[i].Node
 
 		// Find best leaf pair.
 		minDiff := math.MaxFloat64
@@ -174,7 +184,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 				}
 			}
 			outerB = constrain[node].right
-		} else {
+		} else { // For top node.
 			for leafa := range m[node] {
 				for leafb, value := range m[node][leafa] {
 					if value < minDiff {
@@ -190,14 +200,21 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		// right leafs.
 		leafAIndex := matrixop.SliceIndex(len(nodeLeafs[node].a), func(j int) bool { return nodeLeafs[node].a[j] == outerA })
 		if leafAIndex < 0 {
-			leafa := optimized[i].Leafa
-			leafb := optimized[i].Leafb
-			lengtha := optimized[i].Lengtha
-			lengthb := optimized[i].Lengthb
-			optimized[i].Leafa = leafb
-			optimized[i].Leafb = leafa
-			optimized[i].Lengtha = lengthb
-			optimized[i].Lengthb = lengtha
+			optimized[i] = typedef.SubCluster{
+				Leafa:   dendrogram[i].Leafb,
+				Leafb:   dendrogram[i].Leafa,
+				Lengtha: dendrogram[i].Lengthb,
+				Lengthb: dendrogram[i].Lengtha,
+				Node:    dendrogram[i].Node,
+			}
+		} else {
+			optimized[i] = typedef.SubCluster{
+				Leafa:   dendrogram[i].Leafa,
+				Leafb:   dendrogram[i].Leafb,
+				Lengtha: dendrogram[i].Lengtha,
+				Lengthb: dendrogram[i].Lengthb,
+				Node:    dendrogram[i].Node,
+			}
 		}
 
 		// Set contraints for subnodes.

@@ -7,7 +7,7 @@ import (
 
 // DistMetric returns a function for calculating the distance between two vectors.
 // Any entries that are zero in both vectors are ignored and vectors must be equal
-// length. Default metrix is euclidean.
+// length. Default metric is euclidean.
 func DistMetric(metric string) func(x []float64, y []float64) (dist float64, err error) {
 	if metric == "binary" {
 		// Binary considers two non-zero values to be equivalent.
