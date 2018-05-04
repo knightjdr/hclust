@@ -2,7 +2,6 @@
 package optimize
 
 import (
-	"fmt"
 	"math"
 	"sort"
 
@@ -20,16 +19,16 @@ type leafs struct {
 	b []int
 }
 
-func optimal(nodea, nodeb, leafa, leafb int, aSortOrder, bSortOrder []int, minDist float64, nodeScores map[int]map[int]map[int]float64, dist [][]float64) (score float64) {
+func optimal(aSortOrder, bSortOrder []int, minDist float64, nodeScoresA map[int]float64, nodeScoresB map[int]float64, dist [][]float64) (score float64) {
 	// Current best maximal score.
 	score = math.MaxFloat64
 	for _, leftIndex := range aSortOrder {
-		ma := nodeScores[nodea][leafa][leftIndex]
-		if ma+nodeScores[nodeb][leafb][bSortOrder[0]]+minDist >= score {
+		ma := nodeScoresA[leftIndex]
+		if ma+nodeScoresB[bSortOrder[0]]+minDist >= score {
 			return
 		}
 		for _, rightIndex := range bSortOrder {
-			mb := nodeScores[nodeb][leafb][rightIndex]
+			mb := nodeScoresB[rightIndex]
 			if ma+mb+minDist >= score {
 				break
 			} else if score > ma+mb+dist[leftIndex][rightIndex] {
@@ -61,7 +60,7 @@ func sortMap(mapArray map[int]float64) (sortOrder []int) {
 	return
 }
 
-// Optimize optimizes the leafs ordering of a dendrogram using the method
+// Optimize optimizes the leaf ordering of a dendrogram using the method
 // of Bar-Joseph, et al. 2001.
 func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []typedef.SubCluster) {
 
@@ -69,7 +68,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 	n := len(dendrogram)
 
 	// Get leafs beneath each node and group them into two pools: leafs on the left (a)
-	// go into one slice and nodes on the right (b) go into a second slice.
+	// go into one slice and leafs on the right (b) go into a second slice.
 	nodeLeafs := make(map[int]leafs, n)
 	for _, cluster := range dendrogram {
 
@@ -104,13 +103,16 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 	// Calculate optimal ordering score for each node.
 	for _, cluster := range dendrogram {
 		node := cluster.Node
-		leafs := append(nodeLeafs[node].a, nodeLeafs[node].b...)
-		totalLeafs := len(leafs)
+		numLeafsA := len(nodeLeafs[node].a)
+		numLeafsB := len(nodeLeafs[node].b)
 
-		// Initialize 2- and 3D map.
-		m[node] = make(map[int]map[int]float64, totalLeafs)
-		for _, leaf := range leafs {
-			m[node][leaf] = make(map[int]float64, totalLeafs)
+		// Initialize 2D and 3D map.
+		m[node] = make(map[int]map[int]float64, numLeafsA+numLeafsB)
+		for _, leaf := range nodeLeafs[node].a {
+			m[node][leaf] = make(map[int]float64, numLeafsB)
+		}
+		for _, leaf := range nodeLeafs[node].b {
+			m[node][leaf] = make(map[int]float64, numLeafsA)
 		}
 
 		// Iterate over leafs in pool a and b and generate scores.
@@ -135,13 +137,12 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 				bSortOrder := sortMap(m[cluster.Leafb][bLeaf])
 
 				// Calculate score for current node.
-				optScore := optimal(cluster.Leafa, cluster.Leafb, aLeaf, bLeaf, aSortOrder, bSortOrder, minDist, m, dist)
+				optScore := optimal(aSortOrder, bSortOrder, minDist, m[cluster.Leafa][aLeaf], m[cluster.Leafb][bLeaf], dist)
 				m[node][aLeaf][bLeaf] = optScore
 				m[node][bLeaf][aLeaf] = optScore
 			}
 		}
 	}
-	fmt.Println(m)
 
 	// Re-order dendrogram.
 	optimized = dendrogram
