@@ -107,7 +107,7 @@ and 199 columns, with the distances calculated between rows.
 Clustering benchmarks were measured using a symmetric distance matrix with dimensions
 4157×4157.
 
-| Linkage Method  | Execution time |
+| Linkage method  | Execution time |
 | --------------- | -------------- |
 | complete        | 1.7s           |
 | median          | 1.82s          |
