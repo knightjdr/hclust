@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"math"
-	"sort"
 
 	"github.com/knightjdr/hclust/matrixop"
 	"github.com/knightjdr/hclust/tree"
@@ -108,11 +107,6 @@ func NearestNeighbor(matrix [][]float64, method string) (dendrogram []typedef.Su
 			dendrogram[i].Lengthb = math.Sqrt(dendrogram[i].Lengthb)
 		}
 	}
-
-	// Sort dendrogram.
-	sort.SliceStable(dendrogram, func(i, j int) bool {
-		return dendrogram[i].Lengtha < dendrogram[j].Lengtha
-	})
 
 	// Label dendrogram and add branch lengths.
 	dendrogram = tree.AddNodes(dendrogram)

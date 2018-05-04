@@ -158,11 +158,6 @@ func Generic(matrix [][]float64, method string) (dendrogram []typedef.SubCluster
 		dendrogram[i].Lengthb = math.Sqrt(dendrogram[i].Lengthb)
 	}
 
-	// Sort dendrogram.
-	sort.SliceStable(dendrogram, func(i, j int) bool {
-		return dendrogram[i].Lengtha < dendrogram[j].Lengtha
-	})
-
 	// Label dendrogram and add branch lengths.
 	dendrogram = tree.AddNodes(dendrogram)
 
