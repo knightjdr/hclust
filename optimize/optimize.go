@@ -41,7 +41,23 @@ func optimal(aSortOrder, bSortOrder []int, minDist float64, nodeScoresA map[int]
 	return
 }
 
-// SortMap sorts a map in descending order based on its keys.
+// MaxInt finds the maximum between two integers
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// MinInt finds the minimum between two integers
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// SortMap sorts a map in ascending order based on its keys.
 func sortMap(unsortedMap map[int]float64) (sortOrder []int) {
 	type kv struct {
 		key   int
@@ -189,8 +205,10 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 				for leafb, value := range m[node][leafa] {
 					if value < minDiff {
 						minDiff = value
-						outerA = leafa
-						outerB = leafb
+						// Setting the leaf with the lower index as the left leaf for a
+						// consistent procedure.
+						outerA = minInt(leafa, leafb)
+						outerB = maxInt(leafa, leafb)
 					}
 				}
 			}
