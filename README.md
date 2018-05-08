@@ -92,8 +92,8 @@ hclust.Tree(dendrogram []typedef.SubCluster, names []string) (tree Tree, err err
 
 ### Sort
 
-To hclust.Sort method can be used to sort the original data matrix that was input
-to the hclust.Distance method based on the clustering order. The method requires a
+The hclust.Sort method can be used to sort the original data matrix that was input
+to hclust.Distance based on the clustering order. The method requires a
 vector containing the names of the rows/columns in their original order and a vector
 with the sorder order. The sorted order can be obtained from the hclust.Tree method.
 The "dim" supplied to sort must be one of "column" or "row". To sort a matrix
