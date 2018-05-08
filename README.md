@@ -90,6 +90,20 @@ type Tree struct {
 hclust.Tree(dendrogram []typedef.SubCluster, names []string) (tree Tree, err error)
 ```
 
+### Sort
+
+To hclust.Sort method can be used to sort the original data matrix that was input
+to the hclust.Distance method based on the clustering order. The method requires a
+vector containing the names of the rows/columns in their original order and a vector
+with the sorder order. The sorted order can be obtained from the hclust.Tree method.
+The "dim" supplied to sort must be one of "column" or "row". To sort a matrix
+by both column and row, simply call this method twice (once for columns and once
+for rows).
+
+```
+hclust.Sort(matrix [][]float64, names, sortOrder []string, dim string) (sorted [][]float64, err error)
+```
+
 ## Benchmarks
 
 Benchmarking tests were performed using a single core on a 3.7 GHz Quad-Core
