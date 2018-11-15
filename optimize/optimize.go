@@ -150,7 +150,7 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 
 				// Calculate min distance between all rightmost leafs of aLeaf and
 				// leftmost leafs of bLeaf.
-				minDist := math.MaxFloat32
+				minDist := math.MaxFloat64
 				for rightALeaf := range m[cluster.Leafa][aLeaf] {
 					for leftBLeaf := range m[cluster.Leafb][bLeaf] {
 						if dist[rightALeaf][leftBLeaf] < minDist {
