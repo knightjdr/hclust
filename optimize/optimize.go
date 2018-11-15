@@ -33,8 +33,10 @@ func optimal(aSortOrder, bSortOrder []int, minDist float64, nodeScoresA map[int]
 			mb := nodeScoresB[rightIndex]
 			if ma+mb+minDist >= score {
 				break
-			} else if score > ma+mb+dist[leftIndex][rightIndex] {
-				score = ma + mb + dist[leftIndex][rightIndex]
+			}
+			currDist := ma + mb + dist[leftIndex][rightIndex]
+			if score > currDist {
+				score = currDist
 			}
 		}
 	}

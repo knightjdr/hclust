@@ -8,6 +8,24 @@ import (
 )
 
 func TestOptimize(t *testing.T) {
+	// TEST: find maximum between two integers
+	max := maxInt(10, 8)
+	assert.Equal(t, 10, max, "Maximum integer not returned")
+
+	// TEST: find minimum between two integers
+	min := minInt(10, 8)
+	assert.Equal(t, 8, min, "Minimum integer not returned")
+
+	// TEST: sort a map based on keys
+	testMap := map[int]float64{
+		1: 10.4,
+		2: 4.3,
+		4: 75.4,
+	}
+	expectedOrder := []int{2, 1, 4}
+	acutalOrder := sortMap(testMap)
+	assert.Equal(t, expectedOrder, acutalOrder, "Map not sorted correctly by keys")
+
 	// TEST1: test a tree.
 	dendrogram := []typedef.SubCluster{
 		{Leafa: 0, Leafb: 3, Lengtha: 0.05, Lengthb: 0.05, Node: 6},
