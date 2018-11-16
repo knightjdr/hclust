@@ -85,7 +85,6 @@ func sortMap(unsortedMap map[int]float64) (sortOrder []int) {
 // Optimize optimizes the leaf ordering of a dendrogram using the method
 // of Bar-Joseph, et al. 2001.
 func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []typedef.SubCluster) {
-
 	// Number of nodes.
 	n := len(dendrogram)
 
@@ -132,6 +131,16 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		numLeafsA := len(nodeLeafs[node].a)
 		numLeafsB := len(nodeLeafs[node].b)
 
+		// Calculate minimum distance between a leaf and potential b leafs
+		minDist := math.MaxFloat64
+		for _, aLeaf := range nodeLeafs[node].a {
+			for _, bLeaf := range nodeLeafs[node].b {
+				if dist[aLeaf][bLeaf] < minDist {
+					minDist = dist[aLeaf][bLeaf]
+				}
+			}
+		}
+
 		// Initialize 2D and 3D maps.
 		m[node] = make(map[int]map[int]float64, numLeafsA+numLeafsB)
 		for _, leaf := range nodeLeafs[node].a {
@@ -146,18 +155,8 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 
 			// Sort left nodes scores.
 			aSortOrder := sortMap(m[cluster.Leafa][aLeaf])
-			for _, bLeaf := range nodeLeafs[node].b {
 
-				// Calculate min distance between all rightmost leafs of aLeaf and
-				// leftmost leafs of bLeaf.
-				minDist := math.MaxFloat64
-				for rightALeaf := range m[cluster.Leafa][aLeaf] {
-					for leftBLeaf := range m[cluster.Leafb][bLeaf] {
-						if dist[rightALeaf][leftBLeaf] < minDist {
-							minDist = dist[rightALeaf][leftBLeaf]
-						}
-					}
-				}
+			for _, bLeaf := range nodeLeafs[node].b {
 
 				// Sort right nodes scores.
 				bSortOrder := sortMap(m[cluster.Leafb][bLeaf])

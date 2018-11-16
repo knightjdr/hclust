@@ -128,11 +128,15 @@ Clustering benchmarks were measured using a symmetric distance matrix with dimen
 | single          | 1.78s          |
 
 The Leaf optimization benchmark was measured using a dendrogram with 4157 leafs
-(4156 internal nodes).
+(4156 internal nodes) and a mixture of distance and linkage methods. The optimization
+time will depend on how balanced the tree is, with balanced trees taking longer. Different
+distance and linkage methods will affect the balance.
 
-| Execution time |
-| -------------- |
-| 17.05s         |
+| Distance metric  | Linkage method | Execution time  |
+| ---------------- | -------------- | --------------- |
+| maximum          | single         | 13.7s           |
+| Euclidean        | complete       | 1m29.4s         |
+| Canberra         | Ward           |                 |
 
 ## Tests
 
