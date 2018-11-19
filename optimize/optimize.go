@@ -59,32 +59,53 @@ func minInt(a, b int) int {
 	return b
 }
 
-// SortMap sorts a map in ascending order based on its keys.
-func sortMap(unsortedMap map[int]float64) (sortOrder []int) {
+// sortMap sorts a map in ascending order based on its keys.
+func sortMap(unsortedMap map[int]float64) []int {
 	type kv struct {
 		key   int
 		value float64
 	}
 
+	mapLength := len(unsortedMap)
+
 	// Convert map to a slice of kv type.
-	var mapAsSlice []kv
+	mapAsSlice := make([]kv, mapLength)
+	i := 0
 	for k, v := range unsortedMap {
-		mapAsSlice = append(mapAsSlice, kv{key: k, value: v})
+		mapAsSlice[i] = kv{key: k, value: v}
+		i++
 	}
 
 	sort.Slice(mapAsSlice, func(i, j int) bool {
 		return mapAsSlice[i].value < mapAsSlice[j].value
 	})
 
+	sortOrder := make([]int, mapLength)
 	for i := range mapAsSlice {
-		sortOrder = append(sortOrder, mapAsSlice[i].key)
+		sortOrder[i] = mapAsSlice[i].key
 	}
-	return
+	return sortOrder
+}
+
+// shouldIgnore returns a function that determines if a node should be ignored
+// based on the number of comparisons it would require.
+func shouldIgnore(threshold int) (ignoreFunc func(comparisons int) bool) {
+	if threshold == 0 {
+		return func(comparisons int) bool {
+			return false
+		}
+	}
+	return func(comparisons int) bool {
+		if comparisons >= threshold {
+			return true
+		}
+		return false
+	}
 }
 
 // Optimize optimizes the leaf ordering of a dendrogram using the method
 // of Bar-Joseph, et al. 2001.
-func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []typedef.SubCluster) {
+func Optimize(dendrogram []typedef.SubCluster, dist [][]float64, ignore int) (optimized []typedef.SubCluster) {
 	// Number of nodes.
 	n := len(dendrogram)
 
@@ -125,21 +146,13 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 		m[i][i][i] = 0
 	}
 
+	ignoreFunc := shouldIgnore(ignore)
+
 	// Calculate optimal ordering score for each node.
 	for _, cluster := range dendrogram {
 		node := cluster.Node
 		numLeafsA := len(nodeLeafs[node].a)
 		numLeafsB := len(nodeLeafs[node].b)
-
-		// Calculate minimum distance between a leaf and potential b leafs
-		minDist := math.MaxFloat64
-		for _, aLeaf := range nodeLeafs[node].a {
-			for _, bLeaf := range nodeLeafs[node].b {
-				if dist[aLeaf][bLeaf] < minDist {
-					minDist = dist[aLeaf][bLeaf]
-				}
-			}
-		}
 
 		// Initialize 2D and 3D maps.
 		m[node] = make(map[int]map[int]float64, numLeafsA+numLeafsB)
@@ -150,19 +163,41 @@ func Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []ty
 			m[node][leaf] = make(map[int]float64, numLeafsA)
 		}
 
+		// Determine if a node should be optimized and calculate minimum distance
+		// between a leaf and potential b leafs if so.
+		shouldIgnore := ignoreFunc(numLeafsA * numLeafsB)
+		minDist := math.MaxFloat64
+		if !shouldIgnore {
+			for _, aLeaf := range nodeLeafs[node].a {
+				for _, bLeaf := range nodeLeafs[node].b {
+					if dist[aLeaf][bLeaf] < minDist {
+						minDist = dist[aLeaf][bLeaf]
+					}
+				}
+			}
+		}
+
 		// Iterate over leafs in pool a and b and generate scores.
-		for _, aLeaf := range nodeLeafs[node].a {
+		for i, aLeaf := range nodeLeafs[node].a {
 
 			// Sort left nodes scores.
 			aSortOrder := sortMap(m[cluster.Leafa][aLeaf])
 
-			for _, bLeaf := range nodeLeafs[node].b {
+			for j, bLeaf := range nodeLeafs[node].b {
 
 				// Sort right nodes scores.
 				bSortOrder := sortMap(m[cluster.Leafb][bLeaf])
 
 				// Calculate score for current node.
-				optScore := optimal(aSortOrder, bSortOrder, minDist, m[cluster.Leafa][aLeaf], m[cluster.Leafb][bLeaf], dist)
+				var optScore float64
+				if !shouldIgnore {
+					optScore = optimal(aSortOrder, bSortOrder, minDist, m[cluster.Leafa][aLeaf], m[cluster.Leafb][bLeaf], dist)
+				} else if i == 0 && j == 0 {
+					optScore = 0
+				} else {
+					optScore = 1
+				}
+
 				m[node][aLeaf][bLeaf] = optScore
 				m[node][bLeaf][aLeaf] = optScore
 			}

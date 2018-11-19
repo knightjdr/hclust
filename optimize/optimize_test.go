@@ -26,7 +26,17 @@ func TestOptimize(t *testing.T) {
 	acutalOrder := sortMap(testMap)
 	assert.Equal(t, expectedOrder, acutalOrder, "Map not sorted correctly by keys")
 
-	// TEST1: test a tree.
+	// TEST: shouldIgnore should always return false with ignore is "0"
+	ignoreFunc := shouldIgnore(0)
+	assert.False(t, ignoreFunc(0), "Should not ignore node with 0 comparisons when ignore arg is 0")
+	assert.False(t, ignoreFunc(1000000), "Should not ignore node with 1M comparisons when ignore arg is 0")
+
+	// TEST: shouldIgnore when ignore is > 0
+	ignoreFunc = shouldIgnore(250000)
+	assert.False(t, ignoreFunc(100000), "Should not ignore node with 100K comparisons when ignore arg is 250K")
+	assert.True(t, ignoreFunc(250000), "Should ignore node with 250K comparisons when ignore arg is 250K")
+
+	// TEST: test a tree.
 	dendrogram := []typedef.SubCluster{
 		{Leafa: 0, Leafb: 3, Lengtha: 0.05, Lengthb: 0.05, Node: 6},
 		{Leafa: 2, Leafb: 5, Lengtha: 0.075, Lengthb: 0.075, Node: 7},
@@ -49,10 +59,10 @@ func TestOptimize(t *testing.T) {
 		{Leafa: 4, Leafb: 8, Lengtha: 0.2, Lengthb: 0.1, Node: 9},
 		{Leafa: 9, Leafb: 7, Lengtha: 0.1, Lengthb: 0.225, Node: 10},
 	}
-	optimized := Optimize(dendrogram, dist)
+	optimized := Optimize(dendrogram, dist, 0)
 	assert.Equal(t, want, optimized, "Dendrogram not optimized correctly")
 
-	// TEST2: test another tree.
+	// TEST: test another tree.
 	dendrogram = []typedef.SubCluster{
 		{Leafa: 0, Leafb: 4, Lengtha: 1, Lengthb: 1, Node: 5},
 		{Leafa: 1, Leafb: 5, Lengtha: 3.95, Lengthb: 2.95, Node: 6},
@@ -72,6 +82,6 @@ func TestOptimize(t *testing.T) {
 		{Leafa: 3, Leafb: 2, Lengtha: 6.1, Lengthb: 6.1, Node: 7},
 		{Leafa: 6, Leafb: 7, Lengtha: 4.71, Lengthb: 2.56, Node: 8},
 	}
-	optimized = Optimize(dendrogram, dist)
+	optimized = Optimize(dendrogram, dist, 0)
 	assert.Equal(t, want, optimized, "Dendrogram not optimized correctly")
 }

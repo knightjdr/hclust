@@ -24,7 +24,7 @@ optimization is performed using the improved optimization approach of
 
 ### Distance
 
-Setting the transpose argument to true will calculate distances between columns
+Setting the `transpose` argument to true will calculate distances between columns
 as apposed to rows. Euclidean distances will be calculated if an invalid metric
 is supplied. Valid metric values are: binary, canberra, euclidean, jaccard,
 manhattan or maximum.
@@ -33,7 +33,7 @@ manhattan or maximum.
 
 ### Cluster
 
-Cluster requires a symmetric distance matrix and a linkage method. It will return
+`Cluster` requires a symmetric distance matrix and a linkage method. It will return
 a dendrogram with each element in the dendrogram corresponding to a node
 containing the leafs/subnodes and the length of the branches to the leafs/subnodes.
 Valid linkage values are: average, centroid, complete, mcquitty, median, single and
@@ -53,19 +53,35 @@ hclust.Cluster(matrix [][]float64, method string) (dendrogram []typedef.SubClust
 
 ### Optimize
 
-Optimize takes the dendrogram produced by hclust.Cluster and the distance matrix
-produced by hclust.Distance and optimizes the leaf ordering. The dendrogram from
-hclust.Cluster should be input as produced by that method without any modifications.
+`Optimize` takes the dendrogram produced by `hclust.Cluster` and the distance matrix
+produced by `hclust.Distance` and optimizes the leaf ordering. The dendrogram from
+`hclust.Cluster` should be input as produced by that method without any modifications.
+
+The running time will be at worst O(n<sup>4</sup>) with the optimzation approach of Bar-Jospeh. 
+Certain (typically very large) datasets, and particular combinations of
+distance metric and linkage method
+can produce balanced nodes that require a huge number of comparisons to determine the
+optimal order. At these nodes the benefit of optimization is low and you
+can use the ignore argument to skip optimization for them.
+
+To optimize every node in the tree, set the `ignore` argument to 0. Otherwise set the argument
+to the number of comparisons beyond which you wish to skip optimization. For example, nodes with
+500 leaves on each side could require up to 250 000 test comparisons, so setting the ignore argument
+to 250 000 will skip these and larger nodes. The ordering that will be used at skipped nodes
+is the best ordering generated thus far.
+
+The best practice is to run the optimization algorithm optimizing every node and if the run time is
+too long, adjust this value until an acceptable run time is reached.
 
 `
-hclust.Optimize(dendrogram []typedef.SubCluster, dist [][]float64) (optimized []typedef.SubCluster)
+hclust.Optimize(dendrogram []typedef.SubCluster, dist [][]float64, ignore int) (optimized []typedef.SubCluster)
 `
 
 ### Tree
 
-Tree takes the dendrogram produced by hclust.Cluster or hclust.Optimize and a list
-of names for the leaves and generates a newick tree. It also returns the "names"
-vector sorted based on the clustering order. The input "names" vector should be
+`Tree` takes the dendrogram produced by `hclust.Cluster` or `hclust.Optimize` and a list
+of names for the leaves and generates a newick tree. It also returns the `names`
+vector sorted based on the clustering order. The input `names` vector should be
 in the same order as the rows/columns of the starting matrix/table used for
 generating the distance matrix. For example, if you are generating a distance
 matrix between rows of a matrix and those rows are ordered as:
@@ -76,9 +92,9 @@ matrix between rows of a matrix and those rows are ordered as:
 | rowB | 5.4     | 8       |
 | rowC | 7       | 2.1     |
 
-then the names vector should be []string{"rowA", "rowB", "rowC"}.
+then the `names` vector should be []string{"rowA", "rowB", "rowC"}.
 
-The dendrogram from hclust.Cluster or hclust.Optimize should be input as produced
+The dendrogram from `hclust.Cluster` or `hclust.Optimize` should be input as produced
 by those methods without any modifications.
 
 ```
@@ -92,11 +108,11 @@ hclust.Tree(dendrogram []typedef.SubCluster, names []string) (tree Tree, err err
 
 ### Sort
 
-The hclust.Sort method can be used to sort the original data matrix that was input
-to hclust.Distance based on the clustering order. The method requires a
-vector containing the names of the rows/columns in their original order and a vector
-with the sorder order. The sorted order can be obtained from the hclust.Tree method.
-The "dim" supplied to sort must be one of "column" or "row". To sort a matrix
+The `hclust.Sort` method can be used to sort the original data matrix that was input
+to `hclust.Distance` based on the clustering order. The method requires a
+vector containing the `names` of the rows/columns in their original order and a vector
+with the sorder order. The sorted order can be obtained from the `hclust.Tree` method.
+The `dim` argument must be one of "column" or "row". To sort a matrix
 by both column and row, simply call this method twice (once for columns and once
 for rows).
 
@@ -128,15 +144,12 @@ Clustering benchmarks were measured using a symmetric distance matrix with dimen
 | single          | 1.78s          |
 
 The Leaf optimization benchmark was measured using a dendrogram with 4157 leafs
-(4156 internal nodes) and a mixture of distance and linkage methods. The optimization
-time will depend on how balanced the tree is, with balanced trees taking longer. Different
-distance and linkage methods will affect the balance.
+(4156 internal nodes).
 
 | Distance metric  | Linkage method | Execution time  |
 | ---------------- | -------------- | --------------- |
 | maximum          | single         | 13.7s           |
 | Euclidean        | complete       | 1m29.4s         |
-| Canberra         | Ward           |                 |
 
 ## Tests
 
