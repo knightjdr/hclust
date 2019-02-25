@@ -42,7 +42,7 @@ func DistMetric(metric string) func(x []float64, y []float64) (dist float64, err
 			for i := range x {
 				// Ignore i when both x[i] and y[i] are zero.
 				if x[i] > 0 || y[i] > 0 {
-					dist += math.Abs(x[i]-y[i]) / math.Abs(x[i]+y[i])
+					dist += math.Abs(x[i]-y[i]) / (math.Abs(x[i]) + math.Abs(y[i]))
 				}
 			}
 			return
