@@ -48,7 +48,7 @@ type SubCluster struct {
 	Node    int
 }
 
-hclust.Cluster(matrix [][]float64, method string) (dendrogram []typedef.SubCluster, err error)
+hclust.Cluster(matrix [][]float64, method string) (dendrogram []SubCluster, err error)
 ```
 
 ### Optimize
@@ -74,7 +74,7 @@ The best practice is to run the optimization algorithm optimizing every node and
 too long, adjust this value until an acceptable run time is reached.
 
 `
-hclust.Optimize(dendrogram []typedef.SubCluster, dist [][]float64, ignore int) (optimized []typedef.SubCluster)
+hclust.Optimize(dendrogram []SubCluster, dist [][]float64, ignore int) (optimized []SubCluster)
 `
 
 ### Tree
@@ -103,7 +103,7 @@ type Tree struct {
 	Order      []string
 }
 
-hclust.Tree(dendrogram []typedef.SubCluster, names []string) (tree Tree, err error)
+hclust.Tree(dendrogram []SubCluster, names []string) (tree Tree, err error)
 ```
 
 ### Sort
