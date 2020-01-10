@@ -98,12 +98,12 @@ The dendrogram from `hclust.Cluster` or `hclust.Optimize` should be input as pro
 by those methods without any modifications.
 
 ```
-type Tree struct {
+type TreeLayout struct {
 	Newick     string
 	Order      []string
 }
 
-hclust.Tree(dendrogram []SubCluster, names []string) (tree Tree, err error)
+hclust.Tree(dendrogram []SubCluster, names []string) (tree TreeLayout, err error)
 ```
 
 ### Sort

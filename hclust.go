@@ -25,5 +25,8 @@ var Sort = sort.Sort
 // SubCluster stores the node, distance and names of leafs for a subcluster.
 type SubCluster = typedef.SubCluster
 
+// TreeLayout contains a tree in newick format and the leaf order.
+type TreeLayout = tree.Tree
+
 // Tree references the main method for generating the newick tree in the tree subpackage.
 var Tree = tree.Create
