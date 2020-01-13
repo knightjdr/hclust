@@ -3,6 +3,7 @@ package hclust
 
 import (
 	"github.com/knightjdr/hclust/cluster"
+	"github.com/knightjdr/hclust/dendrogram"
 	"github.com/knightjdr/hclust/distance"
 	"github.com/knightjdr/hclust/optimize"
 	"github.com/knightjdr/hclust/sort"
@@ -13,8 +14,14 @@ import (
 // Cluster references the main cluster method in the cluster subpackage.
 var Cluster = cluster.Cluster
 
+// Dendrogram is an array of SubClusters.
+type Dendrogram []SubCluster
+
 // Distance references the main distance method in the distance subpackage.
 var Distance = distance.Distance
+
+// GetNodeHeights gets the height for each dendrogram node by summing child branch lengths.
+var GetNodeHeight = dendrogram.GetNodeHeight
 
 // Optimize references the main leaf optimization method in the optimize subpackage.
 var Optimize = optimize.Optimize

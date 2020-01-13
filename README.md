@@ -48,7 +48,7 @@ type SubCluster struct {
 	Node    int
 }
 
-hclust.Cluster(matrix [][]float64, method string) (dendrogram []SubCluster, err error)
+hclust.Cluster(matrix [][]float64, method string) (dendrogram Dendrogram, err error)
 ```
 
 ### Optimize
@@ -74,7 +74,7 @@ The best practice is to run the optimization algorithm optimizing every node and
 too long, adjust this value until an acceptable run time is reached.
 
 `
-hclust.Optimize(dendrogram []SubCluster, dist [][]float64, ignore int) (optimized []SubCluster)
+hclust.Optimize(dendrogram Dendrogram, dist [][]float64, ignore int) (optimized Dendrogram)
 `
 
 ### Tree
@@ -103,7 +103,7 @@ type TreeLayout struct {
 	Order      []string
 }
 
-hclust.Tree(dendrogram []SubCluster, names []string) (tree TreeLayout, err error)
+hclust.Tree(dendrogram Dendrogram, names []string) (tree TreeLayout, err error)
 ```
 
 ### Sort
@@ -111,7 +111,7 @@ hclust.Tree(dendrogram []SubCluster, names []string) (tree TreeLayout, err error
 The `hclust.Sort` method can be used to sort the original data matrix that was input
 to `hclust.Distance` based on the clustering order. The method requires a
 vector containing the `names` of the rows/columns in their original order and a vector
-with the sorder order. The sorted order can be obtained from the `hclust.Tree` method.
+with the sorted order. The sorted order can be obtained from the `hclust.Tree` method.
 The `dim` argument must be one of "column" or "row". To sort a matrix
 by both column and row, simply call this method twice (once for columns and once
 for rows).
