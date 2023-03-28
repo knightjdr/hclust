@@ -12,7 +12,7 @@ the single method is implemented using MST, the average, complete, McQuitty and
 Ward methods are implemented using the nearest-neighbor chain algorithm and the
 centroid and median methods are implemented using the generic algorithm. Leaf
 optimization is performed using the improved optimization approach of
-[Bar-Jospeh, et al.](https://www.ncbi.nlm.nih.gov/pubmed/11472989)
+[Bar-Joseph, et al.](https://www.ncbi.nlm.nih.gov/pubmed/11472989)
 
 ## Installation
 
@@ -57,7 +57,7 @@ hclust.Cluster(matrix [][]float64, method string) (dendrogram Dendrogram, err er
 produced by `hclust.Distance` and optimizes the leaf ordering. The dendrogram from
 `hclust.Cluster` should be input as produced by that method without any modifications.
 
-The running time will be at worst O(n<sup>4</sup>) with the optimzation approach of Bar-Jospeh. 
+The running time will be at worst O(n<sup>4</sup>) with the optimization approach of Bar-Joseph. 
 Certain (typically very large) datasets, and particular combinations of
 distance metric and linkage method
 can produce balanced nodes that require a huge number of comparisons to determine the
